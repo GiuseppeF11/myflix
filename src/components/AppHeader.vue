@@ -1,19 +1,33 @@
 <script>
 import {store} from '../store'
+import axios from 'axios';
 import SingleMovie from './SingleMovie.vue'
 export default {
     data() {
         return {
-            store
+            store,
+            axios
         };
     },
     components: {
         SingleMovie,
     },  
     methods: {
-
-    },
-
+        getApiMovie() {
+            axios
+            .get(this.store.movieUrl, {
+                params: {
+                    api_key: this.store.apiKey,
+                    query: this.store.searchMovie.length > 0 ? this.store.searchMovie : null,
+                    
+                }
+            })
+            .then((response) => {
+                console.log(response.data.results[0].title) // RESTITUISCE IL TITOLO DEL PRIMO ELEMENTO DELL'ARRAY 
+            });
+        },
+},
+                                                        //       RIPRENDERE DA QUIIII!!!!!
 }
 </script>
 
@@ -37,11 +51,18 @@ export default {
                     </div>
                 </div>
 
-                <SingleMovie/>
+                <div class="container movie-list">
+                    <SingleMovie v-for="(elem, i) in store.movies" :key="i" :movie="elem"/>
+                    <button @click="getApiMovie()">PER CAPIRE CHE PRENDIAMO</button>
+                </div>
             </form>
         </div>
     </header>
 </template>
 
 <style lang="scss" scoped>
+.movie-list {
+    min-height: 50vh;
+    background-color: rgba(108, 21, 21, 0.67);
+}
 </style>
