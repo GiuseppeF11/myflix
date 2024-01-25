@@ -1,59 +1,48 @@
 <script>
 import AppHeader from './components/AppHeader.vue';
 import AppMain from './components/AppMain.vue';
-import AppFooter from './components/AppFooter.vue';
-import SingleMovie from './components/SingleMovie.vue';
 import axios from 'axios';
-import {store} from './store';
+import {store} from './store.js';
 
 export default {
     data() {
         return {
-            store
+            store,
         };
     },
     components: {
         AppHeader,
         AppMain,
-        AppFooter,
-        SingleMovie,
     },  
     methods: {
 
-        getApiMovie() {
+        search() {
             axios
-            .get(this.store.movieUrl, {
-                params: {
-                    api_key: this.store.apiKey,
-                    query: this.store.searchMovie.length > 0 ? this.store.searchMovie : null,
-                    
-                }
-            })
-            .then((response) => {
-                console.log(response.data.results)
-            });
+                .get(this.store.movieUrl,  {
+                    params: {
+                        api_key: this.store.apiKey,
+                        query: this.store.searchText
+                    }
+                })
+                .then((response) => {
+                    console.log(response);
+                    this.store.movies = response.data.results;
+                })
+
+                axios
+                .get(this.store.seriesUrl,  {
+                    params: {
+                        api_key: this.store.apiKey,
+                        query: this.store.searchText
+                    }
+                })
+                .then((response) => {
+                    console.log(response);
+                    this.store.series = response.data.results;
+                })
         },
 
-        /* getApiSerieTv() {
-            axios
-            .get(this.store.tvUrl, {
-                params: {
-                    api_key: this.store.apiKey,
-                    TvSeries: this.store.searchTvSeries.length > 0 ? this.store.searchtvSeries : null,
-                }
-            })
-            .then((response) => {
-                console.log(response)
-            });
-        } */
-
     },
-    mounted() {
-        
-        this.getApiMovie()
-
-        /* this.getApiSerieTv() */
-    }
 }
 </script>
 
@@ -62,11 +51,10 @@ export default {
         Boolfix
     </h1>
 
-    <AppHeader @performSearch="getApiMovie()" />
+    <AppHeader @performSearch="search()"/>
 
     <AppMain />
 
-    <AppFooter />
 </template>
 
 <style lang="scss">
