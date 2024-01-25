@@ -25,8 +25,8 @@ export default {
                     }
                 })
                 .then((response) => {
-                    console.log(response);
                     this.store.movies = response.data.results;
+                    console.log(response.data.results);
                 })
 
                 axios
@@ -37,8 +37,8 @@ export default {
                     }
                 })
                 .then((response) => {
-                    console.log(response);
                     this.store.series = response.data.results;
+                    console.log(response.data.results);
                 })
         },
 
@@ -47,17 +47,22 @@ export default {
 </script>
 
 <template>
-    <h1>
-        Boolfix
-    </h1>
+    <body>
+        <AppHeader @performSearch="search()"/>
 
-    <AppHeader @performSearch="search()"/>
-
-    <AppMain />
+        <AppMain />
+    </body>
 
 </template>
 
 <style lang="scss">
 @use "assets/scss/main" as *;
 @import "assets/scss/partials/reset";
+
+body {
+    background-color: #1C1C1C ;
+    color: white;
+}
+
+
 </style>
