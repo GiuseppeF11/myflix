@@ -32,28 +32,30 @@ export default {
                 <div class="">
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item active">
-                            <a class="nav-link fw-bold text-light" href="#">Home <span class="sr-only">(current)</span></a>
+                            <a class="btn fw-bold text-light" type="button">Home <span class="sr-only">(current)</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Serie Tv</a>
+                            <a class="btn" type="button">Serie Tv</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Film</a>
+                            <div class="dropdown">
+                                <a class="btn" type="button">Film</a>
+                            </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Originali</a>
+                            <a class="btn" type="button">Originali</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Aggiunti di recente</a>
+                            <a class="btn" type="button">Aggiunti di recente</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">La mia lista</a>
+                            <a class="btn" type="button">La mia lista</a>
                         </li>
                     </ul>
                 </div>
                 <form class="form-inline my-2 my-lg-0 d-flex">
                     <input class="form-control mr-sm-2" type="search" placeholder="Cerca" aria-label="Search" v-model="store.searchText">
-                    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit" @click="$emit('performSearch')">
+                    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit" @click.prevent="$emit('performSearch')">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
                 </form>
@@ -75,6 +77,7 @@ export default {
 }
 
 li a{
+    color: grey;
     margin: 10px;
     border-radius: 10px;
     &:hover{

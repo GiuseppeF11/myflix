@@ -7,12 +7,39 @@ export default {
     },
     methods: {
         getFlag() {
-            let finalLink = 'https://flagicons.lipis.dev/flags/4x3/';
-            if (this.originalLanguage == 'en') {
+            let finalLink = 'https://flagicons.lipis.dev/flags/4x3/'; //Assegnamo il link base delle bandiere
+            if (this.originalLanguage == 'en') {        //Se La lingua è en la cambiamo in gb
                 finalLink += 'gb';
             }
             else if (this.originalLanguage == 'js') {
                 finalLink += 'jp';
+            }
+            else if (this.originalLanguage == 'ja') { 
+                finalLink += 'jp';
+            }
+            else if (this.originalLanguage == 'ko') { 
+                finalLink += 'kr';
+            }
+            else if (this.originalLanguage == 'da') { 
+                finalLink += 'dk';
+            }
+            else if (this.originalLanguage == 'cs') { 
+                finalLink += 'cz';
+            }
+            else if (this.originalLanguage == 'zh') { 
+                finalLink += 'cn';
+            }
+            else if (this.originalLanguage == 'fa') { 
+                finalLink += 'ir';
+            }
+            else if (this.originalLanguage == 'nb') { 
+                finalLink += 'no';
+            }
+            else if (this.originalLanguage == 'hi') { 
+                finalLink += 'io';
+            }
+            else if (this.originalLanguage == 'he') { 
+                finalLink += 'il';
             }
             else {
                 finalLink += this.originalLanguage;
@@ -23,7 +50,7 @@ export default {
         }
 
     },
-    props: {
+    props: {                        //Definisco le props provenienti dall'AppMain
         titleOrName: String,
         originalTitleorName: String,
         originalLanguage: String,
@@ -37,30 +64,26 @@ export default {
 <template>
     <div class="element">
         <div class="poster-box">
-            <img :src="poster" :alt="titleOrName" class="poster" v-if="poster != null">
-            <img src="https://image.pngaaa.com/321/3555321-small.png" :alt="titleOrName" class="poster" v-else>
+            <img :src="poster" :alt="titleOrName" class="poster" v-if="poster != null">         <!-- Se il link è valido allora stampalo -->
+            <img src="https://image.pngaaa.com/321/3555321-small.png" :alt="titleOrName" class="poster" v-else>  <!-- Altrimenti stampa quest'immagine -->
         </div>
         <div class="details-box">
-            <div>
+            <div class="detail">
                 <strong>Title: </strong> {{ titleOrName }}
             </div>
-            <div>
+            <div class="detail">
                 <strong>Original title: </strong>{{ originalTitleorName }}
             </div>
-            <div>
+            <div class="detail">
                 <strong>Original language: </strong> {{ originalLanguage }} 
-                <img class="flag" :src="getFlag()" :alt="originalLanguage">
+                <img class="flag" :src="getFlag()" :alt="originalLanguage"> <!-- Richiama la funzione per prendere le bandiere dinamicamente -->
             </div>
-            <div>
-                <strong>Vote: </strong> {{ (parseInt(voteAverage/2))}}
-                <i class="fa-star" v-for="(star, i) in 5" :class="(parseInt(voteAverage/2)) <= i ? 'fa-regular' : 'fa-solid'"></i>
+            <div class="detail">
+                <strong>Vote: </strong> {{Math.ceil(voteAverage/2)}}
+                <i class="fa-star" v-for="(star, i) in 5" :class="(Math.ceil(voteAverage/2)) <= i ? 'fa-regular' : 'fa-solid'"></i> <!-- Se il voto è minore o uguale a 5 stampa la stella piena, altrimenti stella vuota-->
             </div>
-            <div>
-                Flag:
-                
-            </div>
-            <div>
-                Overview: {{ overview }}
+            <div class="detail">
+                <strong>Overview: </strong> {{ overview }}
             </div>
         </div>
     </div>
@@ -72,7 +95,7 @@ export default {
 }
 
 .fa-star {
-    color: gold;
+    color: rgb(182, 182, 182);
 }
 
 .element {
@@ -80,7 +103,8 @@ export default {
     position: relative;
     height: 300px;
     width: 200px;
-    box-shadow: 10px 10px 20px rgb(0, 0, 0);
+    box-shadow: 0px 0px 50px rgb(0, 0, 0);
+    transition: 0.5s;
 
     &:hover {
             cursor: pointer;
@@ -114,6 +138,10 @@ export default {
         position: absolute;
         bottom: 0;
         overflow: auto;
+        text-align: center;
+        .detail {
+            margin-bottom: 10px;
+        }
     }
 }
 
