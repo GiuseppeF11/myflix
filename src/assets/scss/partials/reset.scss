@@ -4,6 +4,19 @@
     box-sizing: border-box;
 }
 
+header {
+    height: 10vh;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    background-color: #1C1C1C;
+}
+
+main {
+    min-height: 90vh;
+    padding-top: 10vh;
+}
+
 /* SCROLL-BAR */
 
 *::-webkit-scrollbar {

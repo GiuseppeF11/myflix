@@ -19,9 +19,8 @@ export default {
 </script>
 
 <template>
-    <header class="">
-        <nav class="navbar navbar-expand-lg navbar-dark ">
-            <div class="col-2 px-4" >
+        <nav class="navbar navbar-expand-lg navbar-dark px-3">
+            <div class="col-1 " >
                 <img class="logo-netflix" src="https://image.tmdb.org/t/p/w342/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="logo-netflix" >
             </div>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,7 +60,6 @@ export default {
                 </form>
             </div>
         </nav>
-    </header>
 
 </template>
 

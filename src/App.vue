@@ -48,9 +48,13 @@ export default {
 
 <template>
     <body>
-        <AppHeader @performSearch="search()"/>
+        <header>
+            <AppHeader @performSearch="search()"/>
+        </header>
 
-        <AppMain />
+        <main>
+            <AppMain/>
+        </main>
     </body>
 
 </template>
