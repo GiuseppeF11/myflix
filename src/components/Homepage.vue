@@ -1,7 +1,7 @@
 <script>
 import axios from 'axios';
 import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
-import 'swiper/swiper-bundle.css'; // Assicurati di importare il CSS di Swiper
+import 'swiper/swiper-bundle.css'; 
 import { store } from '../store.js';
 
 export default {
@@ -12,9 +12,12 @@ export default {
   data() {
     return {
       store,
-      movies: [], // Array per memorizzare i film più recenti
-      topRatedMovies: [], // Array per memorizzare i film più votati
+      movies: [], 
+      topRatedMovies: [],
       popularMovies: [],
+      horrorMovies: [],
+      romanticMovies: [],
+      actionMovies: [],
       backdrop_image: '',
       breakpoints: {
         // Configurazione dei breakpoints per Swiper
@@ -41,6 +44,9 @@ export default {
     this.fetchRecentMovies();
     this.fetchTopRatedMovies();
     this.fetchPopularMovies();
+    this.fetchHorrorMovies();
+    this.fetchRomanticMovies();
+    this.fetchActionMovies();
   },
   methods: {
     async fetchRecentMovies() {
@@ -49,18 +55,18 @@ export default {
           'https://api.themoviedb.org/3/movie/now_playing',
           {
             params: {
-              api_key: store.apiKey, // Inserisci la tua chiave API qui
+              api_key: store.apiKey,
               language: 'it-IT',
               region: 'IT',
             },
           }
         );
-        this.movies = response.data.results; // Salva i film nell'array movies
+        this.movies = response.data.results;
         if (this.movies.length > 0) {
-          this.backdrop_image = this.getImageUrl(this.movies[0].backdrop_path);
+          this.backdrop_image = this.getImageUrl(this.movies[Math.floor(Math.random() * 10)].backdrop_path);
         }
       } catch (error) {
-        console.error('Errore nel recupero dei film:', error);
+        console.error('Errore nel recupero dei film recenti:', error);
       }
     },
     async fetchPopularMovies() {
@@ -69,18 +75,15 @@ export default {
           'https://api.themoviedb.org/3/movie/popular',
           {
             params: {
-              api_key: store.apiKey, // Inserisci la tua chiave API qui
+              api_key: store.apiKey,
               language: 'it-IT',
               region: 'IT',
             },
           }
         );
-        this.popularMovies = response.data.results; // Salva i film nell'array movies
-        if (this.movies.length > 0) {
-          this.backdrop_image = this.getImageUrl(this.movies[0].backdrop_path);
-        }
+        this.popularMovies = response.data.results;
       } catch (error) {
-        console.error('Errore nel recupero dei film:', error);
+        console.error('Errore nel recupero dei film più visti:', error);
       }
     },
     async fetchTopRatedMovies() {
@@ -89,23 +92,78 @@ export default {
           'https://api.themoviedb.org/3/movie/top_rated',
           {
             params: {
-              api_key: store.apiKey, // Inserisci la tua chiave API qui
+              api_key: store.apiKey,
               language: 'it-IT',
               region: 'IT',
             },
           }
         );
-        this.topRatedMovies = response.data.results; // Salva i film nell'array topRatedMovies
+        this.topRatedMovies = response.data.results;
       } catch (error) {
         console.error('Errore nel recupero dei film più votati:', error);
       }
     },
+    async fetchHorrorMovies() {
+      try {
+        const response = await axios.get(
+          'https://api.themoviedb.org/3/discover/movie',
+          {
+            params: {
+              api_key: store.apiKey,
+              language: 'it-IT',
+              region: 'IT',
+              with_genres: 27, // Codice del genere "Horror"
+            },
+          }
+        );
+        this.horrorMovies = response.data.results;
+      } catch (error) {
+        console.error('Errore nel recupero dei film horror:', error);
+      }
+    },
+    async fetchRomanticMovies() {
+      try {
+        const response = await axios.get(
+          'https://api.themoviedb.org/3/discover/movie',
+          {
+            params: {
+              api_key: store.apiKey,
+              language: 'it-IT',
+              region: 'IT',
+              with_genres: 10749, // Codice del genere "Romantico"
+            },
+          }
+        );
+        this.romanticMovies = response.data.results;
+      } catch (error) {
+        console.error('Errore nel recupero dei film romantici:', error);
+      }
+    },
+    async fetchActionMovies() {
+      try {
+        const response = await axios.get(
+          'https://api.themoviedb.org/3/discover/movie',
+          {
+            params: {
+              api_key: store.apiKey,
+              language: 'it-IT',
+              region: 'IT',
+              with_genres: 28, // Codice del genere "Azione"
+            },
+          }
+        );
+        this.actionMovies = response.data.results;
+      } catch (error) {
+        console.error('Errore nel recupero dei film d\'azione:', error);
+      }
+    },
     getImageUrl(image) {
-      return `https://image.tmdb.org/t/p/w500${image}`;
+      return `https://image.tmdb.org/t/p/w1280${image}`;
     },
   },
 };
 </script>
+
 
 <template>
   <div v-if="store.searchText == ''">
@@ -115,6 +173,8 @@ export default {
         <!-- <h2> {{this.movies[0].original_title }}</h2> -->
       </div>
     </div>
+
+    <!-- Sezione Novità su Netflix -->
     <div class="p-3">
       <h3>Novità su Netflix</h3>
       <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
@@ -124,12 +184,15 @@ export default {
               <img :src="getImageUrl(movie.poster_path)" alt="">
             </div>
             <div class="card-details">
-              <!-- Dettagli della carta -->
+              <h4>{{ movie.original_title }}</h4>
+              <button class="btn btn-outline-light"> Riproduci </button>
             </div>
           </section>
         </swiper-slide>
       </swiper>
     </div>
+
+    <!-- Sezione Film più votati -->
     <div class="p-3">
       <h3>Film più votati</h3>
       <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
@@ -139,14 +202,16 @@ export default {
               <img :src="getImageUrl(movie.poster_path)" alt="">
             </div>
             <div class="card-details">
-              <!-- Dettagli della carta -->
+              <h4>{{ movie.original_title }}</h4>
             </div>
           </section>
         </swiper-slide>
       </swiper>
     </div>
+
+    <!-- Sezione Film più visti -->
     <div class="p-3">
-      <h3>Più Visti</h3>
+      <h3>Film più visti</h3>
       <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
         <swiper-slide v-for="movie in popularMovies" :key="movie.id">
           <section class="card">
@@ -154,21 +219,74 @@ export default {
               <img :src="getImageUrl(movie.poster_path)" alt="">
             </div>
             <div class="card-details">
-              <!-- Dettagli della carta -->
+              <h4>{{ movie.original_title }}</h4>
             </div>
           </section>
         </swiper-slide>
       </swiper>
     </div>
+
+    <!-- Sezione Film horror -->
+    <div class="p-3">
+      <h3>Film horror</h3>
+      <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
+        <swiper-slide v-for="movie in horrorMovies" :key="movie.id">
+          <section class="card">
+            <div class="card-image">
+              <img :src="getImageUrl(movie.poster_path)" alt="">
+            </div>
+            <div class="card-details">
+              <h4>{{ movie.original_title }}</h4>
+            </div>
+          </section>
+        </swiper-slide>
+      </swiper>
+    </div>
+
+    <!-- Sezione Film romantici -->
+    <div class="p-3">
+      <h3>Film romantici</h3>
+      <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
+        <swiper-slide v-for="movie in romanticMovies" :key="movie.id">
+          <section class="card">
+            <div class="card-image">
+              <img :src="getImageUrl(movie.poster_path)" alt="">
+            </div>
+            <div class="card-details">
+              <h4>{{ movie.original_title }}</h4>
+            </div>
+          </section>
+        </swiper-slide>
+      </swiper>
+    </div>
+
+    <!-- Sezione Film d'azione -->
+    <div class="p-3">
+      <h3>Film d'azione</h3>
+      <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
+        <swiper-slide v-for="movie in actionMovies" :key="movie.id">
+          <section class="card">
+            <div class="card-image">
+              <img :src="getImageUrl(movie.poster_path)" alt="">
+            </div>
+            <div class="card-details">
+              <h4>{{ movie.original_title }}</h4>
+            </div>
+          </section>
+        </swiper-slide>
+      </swiper>
+    </div>
+
   </div>
 </template>
+
 
 
 
 <style lang="scss" scoped>
 .jumbo {
   width: 100%;
-  height: 50vh;
+  height: 70vh;
 
   img {
     width: 100%;
@@ -188,19 +306,24 @@ export default {
 
 .card {
   border-radius: 0;
+  position: relative; 
+  overflow: hidden;
   scale: 0.9;
   transition: transform linear 0.3s;
   &:hover {
     transform: scale(1.1);
+    .card-image {
+      filter: brightness(20%); 
+    }
+    .card-details {
+      display: block;
+    }
   }
   .card-image {
     height: 350px;
     transition: linear 0.1s;
     cursor: pointer;
-    &:hover {
-      filter: brightness(20%);
-      
-    }
+    position: relative; 
     img {
       width: 100%;
       height: 100%;
@@ -208,7 +331,26 @@ export default {
     }
   }
   .card-details {
-    /* Aggiungi stile per i dettagli della carta */
+    position: absolute;
+    display: none;
+    transition: linear 0.3s;
+    color: whitesmoke;
+    padding: 10px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); 
+    z-index: 10;
+
+    h4 {
+      margin-bottom: 20px
+    }
+    p {
+      height: 200px;
+      overflow: auto;
+    }
   }
 }
 </style>
+
