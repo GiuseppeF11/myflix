@@ -2,7 +2,7 @@
 export default {
     data() {
         return {
-
+            showModal: false,
         };
     },
     methods: {
@@ -47,8 +47,10 @@ export default {
 
             finalLink += '.svg';
             return finalLink;
+        },
+        toggleModal() {
+            this.showModal = !this.showModal;
         }
-
     },
     props: {                        //Definisco le props provenienti dall'AppMain
         titleOrName: String,
@@ -62,31 +64,38 @@ export default {
 </script>
 
 <template>
-    <div class="element">
-        <div class="poster-box">
-            <img :src="poster" :alt="titleOrName" class="poster" v-if="poster != null">         <!-- Se il link è valido allora stampalo -->
-            <img src="https://image.pngaaa.com/321/3555321-small.png" :alt="titleOrName" class="poster" v-else>  <!-- Altrimenti stampa quest'immagine -->
+    <section class="card">
+        <div class="card-image">
+            <img :src="poster" :alt="titleOrName" class="poster" v-if="poster != null">
+            <img src="https://image.pngaaa.com/321/3555321-small.png" :alt="titleOrName" class="poster" v-else>
         </div>
-        <div class="details-box">
-            <div class="detail">
-                <strong>Title: </strong> {{ titleOrName }}
+        <div class="card-details">
+            <div>
+                <h4>{{ titleOrName }}</h4>                    
             </div>
-            <div class="detail">
-                <strong>Original title: </strong>{{ originalTitleorName }}
-            </div>
-            <div class="detail">
-                <strong>Original language: </strong> {{ originalLanguage }} 
-                <img class="flag" :src="getFlag()" :alt="originalLanguage"> <!-- Richiama la funzione per prendere le bandiere dinamicamente -->
-            </div>
-            <div class="detail">
-                <strong>Vote: </strong> {{Math.ceil(voteAverage/2)}}
-                <i class="fa-star" v-for="(star, i) in 5" :class="(Math.ceil(voteAverage/2)) <= i ? 'fa-regular' : 'fa-solid'"></i> <!-- Se il voto è minore o uguale a 5 stampa la stella piena, altrimenti stella vuota-->
-            </div>
-            <div class="detail">
-                <strong>Overview: </strong> {{ overview }}
+            <div>
+                <div>
+                    <strong>Vote: </strong>
+                    <i class="fa-star text-warning" v-for="(star, i) in 5" :class="(Math.ceil(voteAverage/2)) <= i ? 'fa-regular' : 'fa-solid'"></i> <!-- Se il voto è minore o uguale a 5 stampa la stella piena, altrimenti stella vuota-->
+                </div>
+                <div class="row">
+                    <section class="col">
+                        <strong>Lingua: </strong>
+                        <img class="flag" :src="getFlag()" :alt="originalLanguage"> <!-- Richiama la funzione per prendere le bandiere dinamicamente -->
+                    </section>
+                    <section class="col d-flex justify-content-end">
+                        <i class="fa-solid fa-circle-info fs-4 info" @click="toggleModal"></i>
+                    </section>
+                </div>
             </div>
         </div>
-    </div>
+        <div v-if="showModal" class="modal-overlay" @click="toggleModal">
+            <div class="modal-content" @click.stop>
+                <span class="close-button" @click="toggleModal">&times;</span>
+                <p>{{ overview }}</p>
+            </div>
+        </div>
+    </section>
 </template>
 
 <style lang="scss" scoped>
@@ -94,56 +103,100 @@ export default {
     width: 30px;
 }
 
-.fa-star {
-    color: rgb(182, 182, 182);
+.card {
+  border-radius: 5px;
+  position: relative; 
+  overflow: hidden;
+  scale: 0.9;
+  transition: transform linear 0.3s;
+  &:hover {
+    transform: scale(1.1);
+    .card-image {
+      filter: brightness(20%); 
+    }
+    .card-details {
+      display: block;
+    }
+  }
+  .card-image {
+    height: 350px;
+    transition: linear 0.1s;
+    cursor: pointer;
+    position: relative; 
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  .card-details {
+    position: absolute;
+    display: none;
+    transition: linear 0.3s;
+    color: whitesmoke;
+    padding: 10px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7); 
+    z-index: 10;
+    flex-direction: column;
+    justify-content: space-between;
+
+    &:hover{
+        display: flex;
+    }
+
+    h4 {
+      margin-bottom: 20px;
+      min-height: 80px;
+    }
+    p {
+      height: 100px;
+      overflow: auto;
+    }
+  }
 }
 
-.element {
-    background-color: black;
-    position: relative;
-    height: 300px;
-    width: 200px;
-    box-shadow: 0px 0px 50px rgb(0, 0, 0);
-    transition: 0.5s;
-
+.info {
+    color: grey;
+    transition: 0.3s linear;
+    cursor: pointer;
     &:hover {
-            cursor: pointer;
-            box-shadow: 0px 0px 30px rgb(255, 255, 255);
-            transition: 0.5s;
-            .details-box {
-                display: block;
-                transition: 0.5s;
-            }
-            .poster-box {
-                opacity: calc(0.1);
-                transition: 0.5s;
-            }
-        }
-    .poster-box {
-    display: flex;
-    justify-content: center;
+        color: white;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-        
-        .poster {
-            width: 100%;
-            object-fit: contain;
-        }
-    }
-
-    .details-box {
-        height: 100%;
-        display: none;
-        padding: 10px;
-        position: absolute;
-        bottom: 0;
-        overflow: auto;
-        text-align: center;
-        .detail {
-            margin-bottom: 10px;
-        }
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
+.modal-content {
+    background: #ffffff;
+    overflow: auto;
+    height: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0);
+    position: relative;
+}
 
+.close-button {
+    position: fixed;
+    top: 5px;
+    right: 10px;
+    font-size: 30px;
+    font-weight: 900;
+    cursor: pointer;
+}
 </style>

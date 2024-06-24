@@ -31,13 +31,13 @@ export default {
 
 <template>
     <Homepage/>
-    <div v-if="/[a-zA-Z]/.test(store.searchText)">
+    <div v-if="/[a-zA-Z]/.test(store.searchText)" style="padding-top: 10vh;">
         <div class="container" >
         <h2>FILM</h2>
         <div>
             <ul>
                 <div class="row row-cols-5 justify-content-around">
-                    <li v-for="(movie, i) in fixImgUrl(this.store.movies)" :key="i" class="col m-3">
+                    <li v-for="(movie, i) in fixImgUrl(this.store.movies)" :key="i" class="col">
                     <SingleElement
                         :titleOrName="movie.title"
                         :originalTitleorName="movie.original_title"
@@ -57,7 +57,7 @@ export default {
         <div>
             <ul>
                 <div class="row row-cols-5 justify-content-around">
-                    <li v-for="(serie, i) in fixImgUrl(this.store.series)" :key="i" class="col m-3">
+                    <li v-for="(serie, i) in fixImgUrl(this.store.series)" :key="i" class="col">
                     <SingleElement
                         :titleOrName="serie.title"
                         :originalTitleorName="serie.original_title"

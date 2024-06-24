@@ -18,7 +18,7 @@ export default {
         handleScroll() {
             const scrollPosition = window.scrollY;
             const windowHeight = window.innerHeight;
-            const scrollThreshold = windowHeight * 0.1; // 20% dello scroll
+            const scrollThreshold = windowHeight * 0.1;
 
             this.isScrolled = scrollPosition > scrollThreshold;
         },
@@ -62,9 +62,6 @@ export default {
             </div>
             <form class="form-inline my-2 my-lg-0 d-flex">
                 <input class="form-control mr-sm-2" type="search" placeholder="Cerca" aria-label="Search" v-model="store.searchText">
-                <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit" @click.prevent="$emit('performSearch')">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
             </form>
         </div>
     </nav>

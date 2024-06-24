@@ -11,6 +11,7 @@ export default {
   },
   data() {
     return {
+      showModal: false,
       store,
       movies: [], 
       topRatedMovies: [],
@@ -18,7 +19,7 @@ export default {
       horrorMovies: [],
       romanticMovies: [],
       actionMovies: [],
-      backdrop_image: '',
+      jumbo_data: {},
       breakpoints: {
         // Configurazione dei breakpoints per Swiper
         320: {
@@ -49,6 +50,9 @@ export default {
     this.fetchActionMovies();
   },
   methods: {
+    toggleModal() {
+            this.showModal = !this.showModal;
+        },
     async fetchRecentMovies() {
       try {
         const response = await axios.get(
@@ -63,7 +67,8 @@ export default {
         );
         this.movies = response.data.results;
         if (this.movies.length > 0) {
-          this.backdrop_image = this.getImageUrl(this.movies[Math.floor(Math.random() * 10)].backdrop_path);
+          this.jumbo_data = (this.movies[Math.floor(Math.random() * 10)]);
+          console.log(this.jumbo_data)
         }
       } catch (error) {
         console.error('Errore nel recupero dei film recenti:', error);
@@ -168,9 +173,12 @@ export default {
 <template>
   <div v-if="store.searchText == ''">
     <div class="jumbo">
-      <img :src="this.backdrop_image" alt="">
+      <img :src="this.getImageUrl(this.jumbo_data.backdrop_path)" alt="">
       <div class="jumbo-text">
-        <!-- <h2> {{this.movies[0].original_title }}</h2> -->
+        <h2>{{this.jumbo_data.original_title }}</h2>
+        
+          <p>{{this.jumbo_data.overview }}</p>
+          <button class="btn btn-outline-light"> <i class="fa-solid fa-play"></i> Riproduci </button>
       </div>
     </div>
 
@@ -185,8 +193,18 @@ export default {
             </div>
             <div class="card-details">
               <h4>{{ movie.original_title }}</h4>
+              <section class="col d-flex justify-content-end">
+                  <i class="fa-solid fa-circle-info fs-4 info" @click="toggleModal"></i>
+              </section>
+              
               <button class="btn btn-outline-light"> Riproduci </button>
             </div>
+            <div v-if="showModal" class="modal-overlay" @click="toggleModal">
+                  <div class="modal-content" @click.stop>
+                      <span class="close-button" @click="toggleModal">&times;</span>
+                      <p>{{ movie.overview }}</p>
+                  </div>
+              </div>
           </section>
         </swiper-slide>
       </swiper>
@@ -300,12 +318,21 @@ export default {
     position: absolute;
     top: 40%;
     left: 30px;
-    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    
+    h2 {
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    }
+
+    p {
+      height: 100px;
+      width: 40%;
+      overflow: auto
+    }
   }
 }
 
 .card {
-  border-radius: 0;
+  border-radius: 5px;
   position: relative; 
   overflow: hidden;
   scale: 0.9;
@@ -351,6 +378,47 @@ export default {
       overflow: auto;
     }
   }
+}
+
+.info {
+    color: grey;
+    transition: 0.3s linear;
+    cursor: pointer;
+    &:hover {
+        color: white;
+    }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #ffffff;
+    overflow: auto;
+    height: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0);
+    position: relative;
+}
+
+.close-button {
+    position: fixed;
+    top: 5px;
+    right: 10px;
+    font-size: 30px;
+    font-weight: 900;
+    cursor: pointer;
 }
 </style>
 
