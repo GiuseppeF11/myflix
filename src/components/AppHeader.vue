@@ -39,7 +39,7 @@ export default {
             <div>
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item active">
-                        <a class="btn fw-bold text-light" type="button">Home <span class="sr-only">(current)</span></a>
+                        <router-link to="/" class="btn fw-bold text-light">Home<span class="sr-only">(current)</span></router-link>
                     </li>
                     <li class="nav-item">
                         <a class="btn" type="button">Serie Tv</a>
@@ -50,13 +50,7 @@ export default {
                         </div>
                     </li>
                     <li class="nav-item">
-                        <a class="btn" type="button">Originali</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn" type="button">Aggiunti di recente</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn" type="button">La mia lista</a>
+                        <router-link to="/my-list" class="btn">La mia lista</router-link>
                     </li>
                 </ul>
             </div>

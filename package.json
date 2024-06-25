@@ -16,7 +16,8 @@
     "node-fetch": "^2.7.0",
     "swiper": "^8.4.7",
     "vue": "^3.3.11",
-    "vue-awesome-swiper": "^5.0.1"
+    "vue-awesome-swiper": "^5.0.1",
+    "vue-router": "^4.4.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.5.2",

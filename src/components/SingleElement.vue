@@ -75,7 +75,7 @@ export default {
             </div>
             <div>
                 <div>
-                    <strong>Vote: </strong>
+                    <strong>Voto: </strong>
                     <i class="fa-star text-warning" v-for="(star, i) in 5" :class="(Math.ceil(voteAverage/2)) <= i ? 'fa-regular' : 'fa-solid'"></i> <!-- Se il voto è minore o uguale a 5 stampa la stella piena, altrimenti stella vuota-->
                 </div>
                 <div class="row">
@@ -104,6 +104,7 @@ export default {
 }
 
 .card {
+  box-shadow: 0px 0px 20px rgb(0, 0, 0);
   border-radius: 5px;
   position: relative; 
   overflow: hidden;

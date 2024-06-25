@@ -1,7 +1,7 @@
 <script>
 import axios from 'axios';
 import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
-import 'swiper/swiper-bundle.css'; 
+import 'swiper/swiper-bundle.css';
 import { store } from '../store.js';
 
 export default {
@@ -13,154 +13,70 @@ export default {
     return {
       showModal: false,
       store,
-      movies: [], 
+      movies: [],
       topRatedMovies: [],
-      popularMovies: [],
-      horrorMovies: [],
-      romanticMovies: [],
-      actionMovies: [],
+      // Altri array di film come popularMovies, horrorMovies, romanticMovies, actionMovies
       jumbo_data: {},
       breakpoints: {
-        // Configurazione dei breakpoints per Swiper
-        320: {
-          slidesPerView: 2,
-          spaceBetween: 5,
-        },
-        640: {
-          slidesPerView: 3,
-          spaceBetween: 10,
-        },
-        768: {
-          slidesPerView: 4,
-          spaceBetween: 15,
-        },
-        1024: {
-          slidesPerView: 5,
-          spaceBetween: 20,
-        },
+        320: { slidesPerView: 2, spaceBetween: 5 },
+        640: { slidesPerView: 3, spaceBetween: 10 },
+        768: { slidesPerView: 4, spaceBetween: 15 },
+        1024: { slidesPerView: 5, spaceBetween: 20 },
       },
     };
   },
   created() {
     this.fetchRecentMovies();
     this.fetchTopRatedMovies();
-    this.fetchPopularMovies();
-    this.fetchHorrorMovies();
-    this.fetchRomanticMovies();
-    this.fetchActionMovies();
+    // Altri metodi di fetch per popularMovies, horrorMovies, romanticMovies, actionMovies
   },
   methods: {
-    toggleModal() {
-            this.showModal = !this.showModal;
-        },
     async fetchRecentMovies() {
       try {
-        const response = await axios.get(
-          'https://api.themoviedb.org/3/movie/now_playing',
-          {
-            params: {
-              api_key: store.apiKey,
-              language: 'it-IT',
-              region: 'IT',
-            },
-          }
-        );
+        const response = await axios.get('https://api.themoviedb.org/3/movie/now_playing', {
+          params: { api_key: store.apiKey, language: 'it-IT', region: 'IT' },
+        });
         this.movies = response.data.results;
         if (this.movies.length > 0) {
-          this.jumbo_data = (this.movies[Math.floor(Math.random() * 10)]);
-          console.log(this.jumbo_data)
+          this.jumbo_data = this.movies[Math.floor(Math.random() * this.movies.length)];
         }
       } catch (error) {
         console.error('Errore nel recupero dei film recenti:', error);
       }
     },
-    async fetchPopularMovies() {
-      try {
-        const response = await axios.get(
-          'https://api.themoviedb.org/3/movie/popular',
-          {
-            params: {
-              api_key: store.apiKey,
-              language: 'it-IT',
-              region: 'IT',
-            },
-          }
-        );
-        this.popularMovies = response.data.results;
-      } catch (error) {
-        console.error('Errore nel recupero dei film più visti:', error);
-      }
-    },
     async fetchTopRatedMovies() {
       try {
-        const response = await axios.get(
-          'https://api.themoviedb.org/3/movie/top_rated',
-          {
-            params: {
-              api_key: store.apiKey,
-              language: 'it-IT',
-              region: 'IT',
-            },
-          }
-        );
+        const response = await axios.get('https://api.themoviedb.org/3/movie/top_rated', {
+          params: { api_key: store.apiKey, language: 'it-IT', region: 'IT' },
+        });
         this.topRatedMovies = response.data.results;
       } catch (error) {
         console.error('Errore nel recupero dei film più votati:', error);
       }
     },
-    async fetchHorrorMovies() {
-      try {
-        const response = await axios.get(
-          'https://api.themoviedb.org/3/discover/movie',
-          {
-            params: {
-              api_key: store.apiKey,
-              language: 'it-IT',
-              region: 'IT',
-              with_genres: 27, // Codice del genere "Horror"
-            },
-          }
-        );
-        this.horrorMovies = response.data.results;
-      } catch (error) {
-        console.error('Errore nel recupero dei film horror:', error);
+    toggleJumboMovieInList() {
+      const index = this.store.myList.findIndex(movie => movie.id === this.jumbo_data.id);
+      if (index !== -1) {
+        this.store.myList.splice(index, 1);
+      } else {
+        this.store.myList.push(this.jumbo_data);
       }
+      console.log(this.store.myList)
     },
-    async fetchRomanticMovies() {
-      try {
-        const response = await axios.get(
-          'https://api.themoviedb.org/3/discover/movie',
-          {
-            params: {
-              api_key: store.apiKey,
-              language: 'it-IT',
-              region: 'IT',
-              with_genres: 10749, // Codice del genere "Romantico"
-            },
-          }
-        );
-        this.romanticMovies = response.data.results;
-      } catch (error) {
-        console.error('Errore nel recupero dei film romantici:', error);
+    toggleMovieInList(movie) {
+      const index = this.store.myList.findIndex(item => item.id === movie.id);
+      if (index !== -1) {
+        this.store.myList.splice(index, 1);
+      } else {
+        this.store.myList.push(movie);
       }
+      console.log(this.store.myList)
     },
-    async fetchActionMovies() {
-      try {
-        const response = await axios.get(
-          'https://api.themoviedb.org/3/discover/movie',
-          {
-            params: {
-              api_key: store.apiKey,
-              language: 'it-IT',
-              region: 'IT',
-              with_genres: 28, // Codice del genere "Azione"
-            },
-          }
-        );
-        this.actionMovies = response.data.results;
-      } catch (error) {
-        console.error('Errore nel recupero dei film d\'azione:', error);
-      }
+    isJumboMovieInList() {
+      return this.store.myList.some(item => item.id === this.jumbo_data.id);
+    },
+    isMovieInList(movie) {
+      return this.store.myList.some(item => item.id === movie.id);
     },
     getImageUrl(image) {
       return `https://image.tmdb.org/t/p/w1280${image}`;
@@ -169,16 +85,40 @@ export default {
 };
 </script>
 
-
 <template>
   <div v-if="store.searchText == ''">
+    <!-- Jumbotron -->
     <div class="jumbo">
-      <img :src="this.getImageUrl(this.jumbo_data.backdrop_path)" alt="">
+      <img :src="getImageUrl(jumbo_data.backdrop_path)" alt="">
       <div class="jumbo-text">
-        <h2>{{this.jumbo_data.original_title }}</h2>
-        
-          <p>{{this.jumbo_data.overview }}</p>
-          <button class="btn btn-outline-light"> <i class="fa-solid fa-play"></i> Riproduci </button>
+        <h2>{{ jumbo_data.original_title }}</h2>
+        <p>{{ jumbo_data.overview }}</p>
+        <div class="d-flex align-items-center gap-3">
+          <button class="btn btn-outline-light">
+            <i class="fa-solid fa-play"></i> Riproduci
+          </button>
+          <div class="checkbox-wrapper-35">
+            <input
+              value="private"
+              name="switch"
+              id="jumbo-switch"
+              type="checkbox"
+              class="switch"
+              @change="toggleJumboMovieInList"
+              :checked="isJumboMovieInList"
+            />
+            <label for="jumbo-switch">
+              <span class="switch-x-toggletext">
+                <span v-if="!isJumboMovieInList" class="switch-x-unchecked">
+                  <span class="switch-x-hiddenlabel"></span>Aggiungi alla lista
+                </span>
+                <span v-else class="switch-x-checked">
+                  <span class="switch-x-hiddenlabel"></span>Rimuovi dalla lista
+                </span>
+              </span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -193,18 +133,31 @@ export default {
             </div>
             <div class="card-details">
               <h4>{{ movie.original_title }}</h4>
-              <section class="col d-flex justify-content-end">
-                  <i class="fa-solid fa-circle-info fs-4 info" @click="toggleModal"></i>
-              </section>
-              
-              <button class="btn btn-outline-light"> Riproduci </button>
-            </div>
-            <div v-if="showModal" class="modal-overlay" @click="toggleModal">
-                  <div class="modal-content" @click.stop>
-                      <span class="close-button" @click="toggleModal">&times;</span>
-                      <p>{{ movie.overview }}</p>
-                  </div>
+              <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-light">Riproduci</button>
+                <div class="checkbox-wrapper-35">
+                  <input
+                    value="private"
+                    name="switch"
+                    :id="'movie-switch-' + movie.id"
+                    type="checkbox"
+                    class="switch"
+                    @change="toggleMovieInList(movie)"
+                    :checked="isMovieInList(movie)"
+                  />
+                  <label :for="'movie-switch-' + movie.id">
+                    <span class="switch-x-toggletext">
+                      <span v-if="!isMovieInList(movie)" class="switch-x-unchecked">
+                        <span class="switch-x-hiddenlabel"></span>Aggiungi alla lista
+                      </span>
+                      <span v-else class="switch-x-checked">
+                        <span class="switch-x-hiddenlabel"></span>Rimuovi dalla lista
+                      </span>
+                    </span>
+                  </label>
+                </div>
               </div>
+            </div>
           </section>
         </swiper-slide>
       </swiper>
@@ -221,6 +174,30 @@ export default {
             </div>
             <div class="card-details">
               <h4>{{ movie.original_title }}</h4>
+              <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-light">Riproduci</button>
+                <div class="checkbox-wrapper-35">
+                  <input
+                    value="private"
+                    name="switch"
+                    :id="'top-rated-switch-' + movie.id"
+                    type="checkbox"
+                    class="switch"
+                    @change="toggleMovieInList(movie)"
+                    :checked="isMovieInList(movie)"
+                  />
+                  <label :for="'top-rated-switch-' + movie.id">
+                    <span class="switch-x-toggletext">
+                      <span v-if="!isMovieInList(movie)" class="switch-x-unchecked">
+                        <span class="switch-x-hiddenlabel"></span>Aggiungi alla lista
+                      </span>
+                      <span v-else class="switch-x-checked">
+                        <span class="switch-x-hiddenlabel"></span>Rimuovi dalla lista
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
             </div>
           </section>
         </swiper-slide>
@@ -332,6 +309,7 @@ export default {
 }
 
 .card {
+  box-shadow: 0px 0px 20px rgb(0, 0, 0);
   border-radius: 5px;
   position: relative; 
   overflow: hidden;
@@ -420,5 +398,128 @@ export default {
     font-weight: 900;
     cursor: pointer;
 }
+
+//ADD TO LIST 
+
+.checkbox-wrapper-35 .switch {
+  display: none;
+}
+
+.checkbox-wrapper-35 .switch + label {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+  color: #e8e8e8;
+  cursor: pointer;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 12px;
+  line-height: 15px;
+  position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.checkbox-wrapper-35 .switch + label::before,
+  .checkbox-wrapper-35 .switch + label::after {
+  content: '';
+  display: block;
+}
+
+.checkbox-wrapper-35 .switch + label::before {
+  background-color: #8c8c8e;
+  border-radius: 500px;
+  height: 15px;
+  margin-right: 8px;
+  -webkit-transition: background-color 0.125s ease-out;
+  transition: background-color 0.125s ease-out;
+  width: 25px;
+  font-size: 30px;
+}
+
+.checkbox-wrapper-35 .switch + label::after {
+  background-color: #fff;
+  border-radius: 13px;
+  box-shadow: 0 3px 1px 0 rgba(37, 34, 71, 0.05), 0 2px 2px 0 rgba(37, 34, 71, 0.1), 0 3px 3px 0 rgba(37, 34, 71, 0.05);
+  height: 13px;
+  left: 1px;
+  position: absolute;
+  top: 1px;
+  -webkit-transition: -webkit-transform 0.125s ease-out;
+  transition: -webkit-transform 0.125s ease-out;
+  transition: transform 0.125s ease-out;
+  transition: transform 0.125s ease-out, -webkit-transform 0.125s ease-out;
+  width: 13px;
+}
+
+.checkbox-wrapper-35 .switch + label .switch-x-text {
+  display: block;
+  margin-right: .3em;
+}
+
+.checkbox-wrapper-35 .switch + label .switch-x-toggletext {
+  display: block;
+  font-weight: bold;
+  height: 15px;
+  overflow: hidden;
+  position: relative;
+  width: 300px;
+}
+
+.checkbox-wrapper-35 .switch + label .switch-x-unchecked,
+  .checkbox-wrapper-35 .switch + label .switch-x-checked {
+  left: 0;
+  position: absolute;
+  top: 0;
+  -webkit-transition: opacity 0.125s ease-out, -webkit-transform 0.125s ease-out;
+  transition: opacity 0.125s ease-out, -webkit-transform 0.125s ease-out;
+  transition: transform 0.125s ease-out, opacity 0.125s ease-out;
+  transition: transform 0.125s ease-out, opacity 0.125s ease-out, -webkit-transform 0.125s ease-out;
+}
+
+.checkbox-wrapper-35 .switch + label .switch-x-unchecked {
+  opacity: 1;
+  -webkit-transform: none;
+  transform: none;
+}
+
+.checkbox-wrapper-35 .switch + label .switch-x-checked {
+  opacity: 0;
+  -webkit-transform: translate3d(0, 100%, 0);
+  transform: translate3d(0, 100%, 0);
+}
+
+.checkbox-wrapper-35 .switch + label .switch-x-hiddenlabel {
+  position: absolute;
+  visibility: hidden;
+}
+
+.checkbox-wrapper-35 .switch:checked + label::before {
+  background-color: #DB1927;
+}
+
+.checkbox-wrapper-35 .switch:checked + label::after {
+  -webkit-transform: translate3d(10px, 0, 0);
+  transform: translate3d(10px, 0, 0);
+}
+
+.checkbox-wrapper-35 .switch:checked + label .switch-x-unchecked {
+  opacity: 0;
+  -webkit-transform: translate3d(0, -100%, 0);
+  transform: translate3d(0, -100%, 0);
+}
+
+.checkbox-wrapper-35 .switch:checked + label .switch-x-checked {
+  opacity: 1;
+  -webkit-transform: none;
+  transform: none;
+}
+
 </style>
 

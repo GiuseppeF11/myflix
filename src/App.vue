@@ -59,11 +59,14 @@ export default {
 
 <template>
     <body>
+        
         <header>
             <AppHeader />
         </header>
         <main>
-            <AppMain />
+            <router-view></router-view>
+                <!-- <AppMain /> -->
+            
         </main>
     </body>
 </template>
