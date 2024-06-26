@@ -6,50 +6,46 @@ export default {
     data() {
         return {
             store,
-            series: [],
+            movies: [],
             currentPage: 1,
             totalPages: 0,
+            showModal: false,
+            trailerUrl: '',
         };
     },
     computed: {
-        displayedSeries() {
+        displayedmovies() {
             const start = (this.currentPage - 1) * 25;
             const end = this.currentPage * 25;
-            return this.series.slice(start, end);
+            return this.movies.slice(start, end);
         }
     },
     methods: {
-        getImageUrl(image) {
-            return `https://image.tmdb.org/t/p/w1280${image}`;
+        async fetchMovies() {
+            try {
+                const response = await axios.get('https://api.themoviedb.org/3/movie/popular', {
+                    params: { api_key: store.apiKey, language: 'it-IT', region: 'IT', page: this.currentPage },
+                });
+
+                // Concatenazione delle serie alla lista corrente
+                this.movies = [...this.movies, ...response.data.results];
+
+                // Aggiornamento del numero totale di pagine
+                this.totalPages = response.data.total_pages;
+            } catch (error) {
+                console.error('Errore nel recupero delle serie movie:', error);
+            }
         },
-        async fetchSeries() {
-    try {
-        const response = await axios.get('https://api.themoviedb.org/3/movie/popular', {
-            params: { api_key: store.apiKey, language: 'it-IT', region: 'IT', page: this.currentPage },
-        });
-
-        // Concatenazione delle serie alla lista corrente
-        this.series = [...this.series, ...response.data.results];
-        
-        // Aggiornamento del numero totale di pagine
-        this.totalPages = response.data.total_pages;
-    } catch (error) {
-        console.error('Errore nel recupero delle serie TV:', error);
-    }
-},
-
-
-
         nextPage() {
             if (this.currentPage < this.totalPages) {
                 this.currentPage++;
-                this.fetchSeries();
+                this.fetchMovies();
             }
         },
         prevPage() {
             if (this.currentPage > 1) {
                 this.currentPage--;
-                this.fetchSeries();
+                this.fetchMovies();
             }
         },
         toggleMovieInList(movie) {
@@ -62,62 +58,102 @@ export default {
         },
         isMovieInList(movie) {
             return store.myList.some(item => item.id === movie.id);
+        },
+        getImageUrl(image) {
+            return `https://image.tmdb.org/t/p/w1280${image}`;
+        },
+        async playMovieTrailer(movie) {
+            const videos = await this.fetchMovieVideos(movie.id);
+            const trailer = videos.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+            if (trailer) {
+                this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
+                this.showModal = true;
+            } else {
+                alert('Trailer non disponibile');
+            }
+        },
+        async fetchMovieVideos(movieId) {
+            try {
+                const response = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}/videos`, {
+                    params: { api_key: store.apiKey }
+                });
+                return response.data.results;
+            } catch (error) {
+                console.error('Errore nel recupero dei video del film:', error);
+                return [];
+            }
         }
-        
     },
     mounted() {
-        this.fetchSeries();
+        this.fetchMovies();
     },
 };
 </script>
 
-
 <template>
     <section class="container-film">
-        <h2>Serie Tv</h2>
+        <h2>Film</h2>
         <div class="row g-0 row-cols-5">
-            <div class="col" v-for="tv in displayedSeries" :key="tv.id">
+            <div class="col" v-for="movie in displayedmovies" :key="movie.id">
                 <div class="card">
                     <div class="card-image">
-                        <img :src="getImageUrl(tv.poster_path)" alt="">
+                        <img :src="getImageUrl(movie.poster_path)" alt="">
                     </div>
                     <div class="card-details">
-                        <h4>{{ tv.name }}</h4>
-                        <p>{{ tv.overview }}</p>
-                        <div class="checkbox-wrapper-35">
-                            <input
-                                value="private"
-                                name="switch"
-                                :id="'switch-' + tv.id"
-                                type="checkbox"
-                                class="switch"
-                                @change="toggleMovieInList(tv)"
-                                :checked="isMovieInList(tv)"
-                            />
-                            <label :for="'switch-' + tv.id">
-                                <span class="switch-x-toggletext">
-                                    <span v-if="!isMovieInList(tv)" class="switch-x-unchecked">
-                                        <span class="switch-x-hiddenlabel"></span>Aggiungi alla lista
+                        <h4>{{ movie.original_title }}</h4>
+                        <p>{{ movie.overview }}</p>
+                        <div class="d-flex align-items-center gap-3">
+                            <button class="btn btn-outline-light trailer_button" @click="playMovieTrailer(movie)">
+                                <i class="fa-solid fa-play"></i>
+                            </button>
+                            <div class="checkbox-wrapper-35">
+                                <input
+                                    value="private"
+                                    name="switch"
+                                    :id="'switch-' + movie.id"
+                                    type="checkbox"
+                                    class="switch"
+                                    @change="toggleMovieInList(movie)"
+                                    :checked="isMovieInList(movie)"
+                                />
+                                <label :for="'switch-' + movie.id">
+                                    <span class="switch-x-toggletext">
+                                        <span v-if="!isMovieInList(movie)" class="switch-x-unchecked">
+                                            <span class="switch-x-hiddenlabel"></span>Aggiungi alla lista
+                                        </span>
+                                        <span v-else class="switch-x-checked">
+                                            <span class="switch-x-hiddenlabel"></span>Rimuovi dalla lista
+                                        </span>
                                     </span>
-                                    <span v-else class="switch-x-checked">
-                                        <span class="switch-x-hiddenlabel"></span>Rimuovi dalla lista
-                                    </span>
-                                </span>
-                            </label>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="pagination">
-            <button class="btn btn-outline-light" @click="prevPage" :disabled="currentPage === 1">Prev</button>
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <button class="btn btn-outline-light" @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+            <button class="btn btn-outline-light" @click="prevPage" :disabled="currentPage === 1"><i class="fa-solid fa-arrow-left"></i></button>
+            <span> {{ currentPage }} di {{ totalPages }}</span>
+            <button class="btn btn-outline-light" @click="nextPage" :disabled="currentPage === totalPages"><i class="fa-solid fa-arrow-right"></i></button>
         </div>
 
+        <!-- Modal per il trailer -->
+        <div class="modal-overlay" v-if="showModal">
+            <div class="modal-content">
+                <span class="close-button" @click="showModal = false">&times;</span>
+                <iframe
+                    width="100%"
+                    height="100%"
+                    :src="trailerUrl"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+            </div>
+        </div>
     </section>
 </template>
-
 
 
 
@@ -127,52 +163,7 @@ export default {
 }
 
 .card {
-    box-shadow: 0px 0px 20px rgb(0, 0, 0);
-    border-radius: 5px;
-    position: relative;
-    overflow: hidden;
-    scale: 0.9;
-    transition: transform linear 0.3s;
-    &:hover {
-        transform: scale(1.1);
-        .card-image {
-            filter: brightness(20%);
-        }
-        .card-details {
-            display: block;
-        }
-    }
-    .card-image {
-        height: 350px;
-        transition: linear 0.1s;
-        cursor: pointer;
-        position: relative;
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    }
-    .card-details {
-        position: absolute;
-        display: none;
-        transition: linear 0.3s;
-        color: whitesmoke;
-        padding: 10px;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.7);
-        z-index: 10;
-        h4 {
-            margin-bottom: 20px;
-        }
-        p {
-            height: 200px;
-            overflow: auto;
-        }
-    }
+    margin-bottom: 20px;
 }
 
 .pagination {
@@ -194,4 +185,5 @@ export default {
         font-size: 16px;
     }
 }
+
 </style>

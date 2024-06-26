@@ -63,7 +63,7 @@ export default {
 <style lang="scss" scoped>
 .logo-netflix {
     width: 100%;
-    cursor: pointer;
+    min-width: 100px;
 }
 
 .form-control:focus {

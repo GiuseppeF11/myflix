@@ -32,7 +32,7 @@ export default {
 <template>
     <Homepage/>
     <div v-if="/[a-zA-Z]/.test(store.searchText)" style="padding-top: 10vh;">
-        <div class="container" v-if="this.store.movies.length > 0">
+        <div class="px-3" v-if="this.store.movies.length > 0">
         <h2>Film</h2>
         <div>
             <ul>
@@ -52,7 +52,7 @@ export default {
         </div>
     </div>
     <hr>
-    <div class="container" v-if="this.store.series.length > 0"> 
+    <div class="px-3" v-if="this.store.series.length > 0"> 
         <h2>Serie Tv</h2>
         <div>
             <ul>
