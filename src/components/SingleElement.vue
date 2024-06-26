@@ -81,7 +81,7 @@ export default {
                 <div class="row">
                     <section class="col">
                         <strong>Lingua: </strong>
-                        <img class="flag" :src="getFlag()" :alt="originalLanguage"> <!-- Richiama la funzione per prendere le bandiere dinamicamente -->
+                        <img class="flag" :src="getFlag()" :alt="originalLanguage">
                     </section>
                     <section class="col d-flex justify-content-end">
                         <i class="fa-solid fa-circle-info fs-4 info" @click="toggleModal"></i>

@@ -38,28 +38,27 @@ export default {
         <div class="collapse navbar-collapse justify-content-between px-2" id="navbarSupportedContent">
             <div>
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
-                        <router-link to="/" class="btn fw-bold text-light">Home<span class="sr-only">(current)</span></router-link>
+                    <li class="nav-item" >
+                        <router-link to="/" :class="{ 'active': $route.path === '/' }" class="btn">Home<span class="sr-only">(current)</span></router-link>
                     </li>
-                    <li class="nav-item">
-                        <a class="btn" type="button">Serie Tv</a>
+                    <li class="nav-item" >
+                        <router-link to="/film" :class="{ 'active': $route.path === '/film' }" class="btn">Film</router-link>
                     </li>
-                    <li class="nav-item">
-                        <div class="dropdown">
-                            <a class="btn" type="button">Film</a>
-                        </div>
+                    <li class="nav-item" >
+                        <router-link to="/series" :class="{ 'active': $route.path === '/series' }" class="btn">Serie Tv</router-link>
                     </li>
-                    <li class="nav-item">
-                        <router-link to="/my-list" class="btn">La mia lista</router-link>
+                    <li class="nav-item" >
+                        <router-link to="/my-list" :class="{ 'active': $route.path === '/my-list' }" class="btn">La mia lista</router-link>
                     </li>
                 </ul>
             </div>
-            <form class="form-inline my-2 my-lg-0 d-flex">
+            <form class="form-inline my-2 my-lg-0 d-flex" v-if="$route.path === '/'">
                 <input class="form-control mr-sm-2" type="search" placeholder="Cerca" aria-label="Search" v-model="store.searchText">
             </form>
         </div>
     </nav>
 </template>
+
 
 <style lang="scss" scoped>
 .logo-netflix {
@@ -72,15 +71,21 @@ export default {
     box-shadow: 0px 0px 10px rgb(204, 204, 204);
 }
 
-li a {
-    color: rgb(220, 220, 220);
-    margin: 10px;
-    border-radius: 10px;
-    &:hover {
-        box-shadow: 0px 1px 10px white;
-        transition: 0.5s;
-    }
+li.nav-item {
+    a {
+        color: rgb(220, 220, 220);
+        margin: 10px;
+        border-radius: 10px;
+        &:hover {
+            box-shadow: 0px 1px 10px white;
+            transition: 0.5s;
+        }
+        &.active {
+            color: white;
+        }
+    }    
 }
+
 
 .navbar {
     transition: background-color 0.3s linear;
@@ -91,4 +96,6 @@ li a {
     background-color: #1C1C1C;
     transition: background-color 0.3s linear;
 }
+
+
 </style>

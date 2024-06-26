@@ -32,8 +32,8 @@ export default {
 <template>
     <Homepage/>
     <div v-if="/[a-zA-Z]/.test(store.searchText)" style="padding-top: 10vh;">
-        <div class="container" >
-        <h2>FILM</h2>
+        <div class="container" v-if="this.store.movies.length > 0">
+        <h2>Film</h2>
         <div>
             <ul>
                 <div class="row row-cols-5 justify-content-around">
@@ -52,8 +52,8 @@ export default {
         </div>
     </div>
     <hr>
-    <div class="container">
-        <h2>SERIES</h2>
+    <div class="container" v-if="this.store.series.length > 0"> 
+        <h2>Serie Tv</h2>
         <div>
             <ul>
                 <div class="row row-cols-5 justify-content-around">
