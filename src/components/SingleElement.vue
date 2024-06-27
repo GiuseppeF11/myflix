@@ -6,59 +6,31 @@ export default {
         };
     },
     methods: {
-        getFlag() {
-            let finalLink = 'https://flagicons.lipis.dev/flags/4x3/'; //Assegnamo il link base delle bandiere
-            if (this.originalLanguage == 'en') {        //Se La lingua è en la cambiamo in gb
-                finalLink += 'gb';
-            }
-            else if (this.originalLanguage == 'js') {
-                finalLink += 'jp';
-            }
-            else if (this.originalLanguage == 'ja') { 
-                finalLink += 'jp';
-            }
-            else if (this.originalLanguage == 'ko') { 
-                finalLink += 'kr';
-            }
-            else if (this.originalLanguage == 'da') { 
-                finalLink += 'dk';
-            }
-            else if (this.originalLanguage == 'cs') { 
-                finalLink += 'cz';
-            }
-            else if (this.originalLanguage == 'zh') { 
-                finalLink += 'cn';
-            }
-            else if (this.originalLanguage == 'fa') { 
-                finalLink += 'ir';
-            }
-            else if (this.originalLanguage == 'nb') { 
-                finalLink += 'no';
-            }
-            else if (this.originalLanguage == 'hi') { 
-                finalLink += 'io';
-            }
-            else if (this.originalLanguage == 'he') { 
-                finalLink += 'il';
-            }
-            else {
-                finalLink += this.originalLanguage;
-            }
-
-            finalLink += '.svg';
-            return finalLink;
-        },
         toggleModal() {
             this.showModal = !this.showModal;
+        },
+        getEmbedUrl() {
+            // This method converts the trailer URL to the embed format if it's a YouTube link
+            if (!this.trailerUrl) return '';
+
+            let url = new URL(this.trailerUrl);
+            if (url.hostname.includes('youtube.com') && url.searchParams.get('v')) {
+                return `https://www.youtube.com/embed/${url.searchParams.get('v')}`;
+            } else if (url.hostname.includes('youtu.be')) {
+                return `https://www.youtube.com/embed${url.pathname}`;
+            }
+
+            return this.trailerUrl; // Return the original URL if it's not a YouTube link
         }
     },
-    props: {                        //Definisco le props provenienti dall'AppMain
+    props: {
         titleOrName: String,
         originalTitleorName: String,
         originalLanguage: String,
         voteAverage: Number,
         poster: String,
         overview: String,
+        trailerUrl: String, // Add this prop for the trailer URL
     }
 }
 </script>
@@ -75,65 +47,22 @@ export default {
                 <p>{{ overview }}</p>                    
             </div>
             <div>
-                <div>
-                    <strong>Voto: </strong>
-                    <i class="fa-star text-warning" v-for="(star, i) in 5" :class="(Math.ceil(voteAverage/2)) <= i ? 'fa-regular' : 'fa-solid'"></i> <!-- Se il voto è minore o uguale a 5 stampa la stella piena, altrimenti stella vuota-->
-                </div>
-                <div class="row">
-                    <section class="col">
-                        <strong>Lingua: </strong>
-                        <img class="flag" :src="getFlag()" :alt="originalLanguage"> <!-- Richiama la funzione per prendere le bandiere dinamicamente -->
-                    </section>
-                </div>
+                <button class="btn btn-outline-light" @click="toggleModal">
+                    <i class="fa-solid fa-play"></i>
+                </button>
             </div>
         </div>
     </section>
+    
+    <!-- Modal for trailer player -->
+    <div v-if="showModal" class="modal-overlay" @click="toggleModal">
+        <div class="modal-content" @click.stop>
+            <span class="close-button" @click="toggleModal">&times;</span>
+            <iframe :src="getEmbedUrl()" width="100%" height="500" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
 </template>
 
 <style lang="scss" scoped>
-.flag {
-    width: 30px;
-    border-radius: 50%;
-}
 
-.info {
-    color: grey;
-    transition: 0.3s linear;
-    cursor: pointer;
-    &:hover {
-        color: white;
-    }
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: #ffffff;
-    overflow: auto;
-    height: 100%;
-    padding: 10px;
-    border-radius: 5px;
-    width: 100%;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0);
-    position: relative;
-}
-
-.close-button {
-    position: fixed;
-    top: 5px;
-    right: 10px;
-    font-size: 30px;
-    font-weight: 900;
-    cursor: pointer;
-}
 </style>

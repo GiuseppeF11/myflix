@@ -126,14 +126,14 @@ export default {
 <template>
   <div v-if="store.searchText == ''">
     <!-- Jumbotron -->
-    <div class="jumbo">
+    <div class="jumbo mb-3">
       <img :src="getImageUrl(jumbo_data.backdrop_path)" alt="">
       <div class="jumbo-text">
-        <h2>{{ jumbo_data.original_title }}</h2>
-        <p>{{ jumbo_data.overview }}</p>
+        <h2> {{ jumbo_data.original_title }}</h2>
+        <p class="w-75">{{ jumbo_data.overview }}</p>
         <div class="d-flex align-items-center gap-3">
           <button class="btn btn-outline-light" @click="playJumboMovieTrailer">
-            <i class="fa-solid fa-play"></i> Trailer
+            <i class="fa-solid fa-play"></i> 
           </button>
           <div class="checkbox-wrapper-35">
             <input

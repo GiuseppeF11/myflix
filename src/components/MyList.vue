@@ -56,7 +56,7 @@ export default {
   <section class="container-list px-3">
     <h2 class="">La mia lista</h2>
     <h5 class="no-film" v-if="myMovies.length === 0">Nessun film presente</h5>
-    <div class="row g-0 row-cols-5" v-else>
+    <div class="row g-0 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5" v-else>
       <div class="col" v-for="movie in myMovies" :key="movie.id">
         <div class="card">
           <div class="card-image">
