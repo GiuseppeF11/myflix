@@ -28,8 +28,8 @@ export default {
 
 <template>
     <nav :class="['navbar', 'navbar-expand-lg', 'px-3', { 'scrolled': isScrolled }]">
-        <div class="col-1">
-            <img class="logo-netflix" src="https://image.tmdb.org/t/p/w342/wwemzKWzjKYJFfCeiB57q3r4Bcm.png" alt="logo-netflix">
+        <div class="col-1" >
+            <img class="logo-netflix" src="/public/img/logo-myflix.png" alt="logo-netflix">
         </div>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -39,7 +39,7 @@ export default {
             <div>
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item" >
-                        <router-link to="/" :class="{ 'active': $route.path === '/' }" class="btn">Home<span class="sr-only">(current)</span></router-link>
+                        <router-link to="/" :class="{ 'active': $route.path === '/' }" class="btn">Home<span class="sr-only"></span></router-link>
                     </li>
                     <li class="nav-item" >
                         <router-link to="/film" :class="{ 'active': $route.path === '/film' }" class="btn">Film</router-link>
