@@ -111,7 +111,6 @@ export default {
     </div>
   </section>
 </template>
-  
 
 <style lang="scss" scoped>
 .container-list {
@@ -122,6 +121,4 @@ export default {
   text-align: center;
   font-style: italic; 
 }
-
-
 </style>
