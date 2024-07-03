@@ -79,7 +79,8 @@ export default {
       <div class="col" v-for="movie in myMovies" :key="movie.id">
         <div class="card">
           <div class="card-image">
-            <img :src="getImageUrl(movie.poster_path)" alt="">
+            <img :src="getImageUrl(movie.poster_path)" v-if="movie.poster_path != null" alt="">
+            <img src="https://image.pngaaa.com/321/3555321-small.png" :alt="titleOrName" class="poster" v-else>
           </div>
           <div class="card-details">
             <h4>{{ movie.title ? movie.title : movie.name }}</h4>
