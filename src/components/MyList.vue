@@ -8,7 +8,8 @@ export default {
     return {
       myMovies: store.myList,
       showModal: false,
-      trailerUrl: ''
+      trailerUrl: '',
+      trailerError: false,
     };
   },
   methods: {
@@ -28,26 +29,44 @@ export default {
       return store.myList.some(item => item.id === movie.id);
     },
     async playMovieTrailer(movie) {
-      const videos = await this.fetchMovieVideos(movie.id);
+      const videos = await this.fetchVideos(movie.id, movie.media_type || 'movie');
       const trailer = videos.find(video => video.type === 'Trailer' && video.site === 'YouTube');
       if (trailer) {
         this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
         this.showModal = true;
       } else {
-        alert('Trailer non disponibile');
+        this.showTrailerError();
       }
     },
-    async fetchMovieVideos(movieId) {
-      try {
-        const response = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}/videos`, {
-          params: { api_key: store.apiKey }
-        });
-        return response.data.results;
-      } catch (error) {
-        console.error('Errore nel recupero dei video del film:', error);
-        return [];
-      }
+    showTrailerError() {
+      this.trailerError = true;
+      setTimeout(() => {
+        this.trailerError = false;
+      }, 2000);
+    },
+    async playMovieTrailer(movie) {
+    const type = movie.title ? 'movie' : 'tv';
+    const videos = await this.fetchVideos(movie.id, type);
+    const trailer = videos.find(video => video.type === 'Trailer' && video.site === 'YouTube');
+    if (trailer) {
+      this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
+      this.showModal = true;
+    } else {
+      this.showTrailerError();
     }
+  },
+  async fetchVideos(id, type) {
+    const endpoint = type === 'movie' ? `https://api.themoviedb.org/3/movie/${id}/videos` : `https://api.themoviedb.org/3/tv/${id}/videos`;
+    try {
+      const response = await axios.get(endpoint, {
+        params: { api_key: store.apiKey }
+      });
+      return response.data.results;
+    } catch (error) {
+      console.error('Errore nel recupero dei video:', error);
+      return [];
+    }
+  }
   }
 };
 </script>
@@ -108,6 +127,10 @@ export default {
           allowfullscreen
         ></iframe>
       </div>
+    </div>
+
+    <div class="trailer-error" v-if="trailerError">
+      <h2>Trailer non disponibile</h2>
     </div>
   </section>
 </template>

@@ -7,6 +7,7 @@ export default {
         return {
             showModal: false,
             trailerUrl: '',
+            trailerError: false,
         };
     },
     methods: {
@@ -44,8 +45,14 @@ export default {
                 this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
                 this.showModal = true;
             } else {
-                alert('Trailer non disponibile');
+                this.showTrailerError();
             }
+        },
+        showTrailerError() {
+            this.trailerError = true;
+            setTimeout(() => {
+                this.trailerError = false;
+            }, 2000);
         },
         toggleMovieInList(movie) {
             const index = store.myList.findIndex(item => item.id === movie.id);
@@ -126,6 +133,10 @@ export default {
             <span class="close-button" @click="toggleModal">&times;</span>
             <iframe :src="getEmbedUrl()" width="100%" height="500" frameborder="0" allowfullscreen></iframe>
         </div>
+    </div>
+
+    <div class="trailer-error" v-if="trailerError">
+        <h2>Trailer non disponibile</h2>
     </div>
 </template>
 

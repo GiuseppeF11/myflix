@@ -182,7 +182,7 @@ main {
         img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
         }
     }
     .card-details {
@@ -259,4 +259,20 @@ iframe {
   border: none;
   width: 100%;
   height: 100%;
+}
+
+//TRAILER ERROR
+
+.trailer-error {
+  position: fixed;
+  width: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.91);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 1000;
+  text-align: center;
 }

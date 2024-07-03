@@ -11,6 +11,7 @@ export default {
             totalPages: 0,
             showModal: false,
             trailerUrl: '',
+            trailerError: false,
         };
     },
     computed: {
@@ -69,8 +70,14 @@ export default {
                 this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
                 this.showModal = true;
             } else {
-                alert('Trailer non disponibile');
+                this.showTrailerError();
             }
+        },
+        showTrailerError() {
+            this.trailerError = true;
+            setTimeout(() => {
+                this.trailerError = false;
+            }, 2000);
         },
         async fetchTvVideos(tvId) {
             try {
@@ -152,6 +159,10 @@ export default {
                     allowfullscreen
                 ></iframe>
             </div>
+        </div>
+
+        <div class="trailer-error" v-if="trailerError">
+            <h2>Trailer non disponibile</h2>
         </div>
     </section>
 </template>

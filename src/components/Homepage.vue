@@ -19,6 +19,9 @@ export default {
       horrorMovies: [],
       romanticMovies: [],
       actionMovies: [],
+      sciFiMovies: [],
+      comedyMovies: [],
+      documentaryMovies: [],
       jumbo_data: {},
       breakpoints: {
         320: { slidesPerView: 2, spaceBetween: 5 },
@@ -27,6 +30,7 @@ export default {
         1024: { slidesPerView: 5, spaceBetween: 20 },
       },
       trailerUrl: '',
+      trailerError: false,
     };
   },
   created() {
@@ -41,6 +45,9 @@ export default {
         this.fetchGenreMovies('27', this.horrorMovies),
         this.fetchGenreMovies('10749', this.romanticMovies),
         this.fetchGenreMovies('28', this.actionMovies),
+        this.fetchGenreMovies('878', this.sciFiMovies), 
+        this.fetchGenreMovies('35', this.comedyMovies), 
+        this.fetchGenreMovies('99', this.documentaryMovies) 
       ]);
     },
     async fetchMovies(endpoint, targetArray, jumboDataKey = null) {
@@ -84,7 +91,7 @@ export default {
         this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
         this.showModal = true;
       } else {
-        alert('Trailer non disponibile');
+        this.showTrailerError();
       }
     },
     async playMovieTrailer(movie) {
@@ -94,8 +101,14 @@ export default {
         this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
         this.showModal = true;
       } else {
-        alert('Trailer non disponibile');
+        this.showTrailerError();
       }
+    },
+    showTrailerError() {
+      this.trailerError = true;
+      setTimeout(() => {
+        this.trailerError = false;
+      }, 2000);
     },
     toggleJumboMovieInList() {
       this.toggleMovieInList(this.jumbo_data);
@@ -120,8 +133,6 @@ export default {
   },
 };
 </script>
-
-
 
 <template>
   <div v-if="store.searchText == ''">
@@ -174,6 +185,9 @@ export default {
       </div>
     </div>
 
+    <div class="trailer-error" v-if="trailerError">
+      <h2>Trailer non disponibile</h2>
+    </div>
 
     <!-- Sezioni di film -->
     <template v-for="(movieList, title) in {
@@ -182,7 +196,10 @@ export default {
       'Film più visti': popularMovies,
       'Film horror': horrorMovies,
       'Film romantici': romanticMovies,
-      'Film d\'azione': actionMovies
+      'Film d\'azione': actionMovies,
+      'Film di fantascienza': sciFiMovies, // Sci-Fi movies
+      'Commedie': comedyMovies, // Comedy movies
+      'Documentari': documentaryMovies // Documentary movies
     }">
       <div class="p-3">
         <h2>{{ title }}</h2>
@@ -232,9 +249,6 @@ export default {
 </template>
 
 
-
-
-
 <style lang="scss" scoped>
 .jumbo {
   width: 100%;
@@ -260,10 +274,8 @@ export default {
     p {
       height: 100px;
       width: 40%;
-      overflow: auto
+      overflow: auto;
     }
   }
 }
-
 </style>
-
