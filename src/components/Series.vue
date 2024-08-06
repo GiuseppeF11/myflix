@@ -101,7 +101,7 @@ export default {
 <template>
     <section class="container-film">
         <h2>Serie TV</h2>
-        <div class="row g-0 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+        <div class="row g-0 row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-5">
             <div class="col" v-for="tv in displayedSeries" :key="tv.id">
                 <div class="card">
                     <div class="card-image">

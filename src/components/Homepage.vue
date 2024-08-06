@@ -137,11 +137,13 @@ export default {
 <template>
   <div v-if="store.searchText == ''">
     <!-- Jumbotron -->
-    <div class="jumbo mb-3">
+    <div class="jumbo mb-5">
       <img :src="getImageUrl(jumbo_data.backdrop_path)" alt="">
       <div class="jumbo-text">
-        <h2> {{ jumbo_data.original_title }}</h2>
-        <p class="w-75">{{ jumbo_data.overview }}</p>
+        <div>
+          <h2 class="text-start">{{jumbo_data.original_title }}</h2>
+          <p class="text-start w-75">{{ jumbo_data.overview }}</p>
+        </div>
         <div class="d-flex align-items-center gap-3">
           <button class="btn btn-outline-light" @click="playJumboMovieTrailer">
             <i class="fa-solid fa-play"></i> 
@@ -202,7 +204,7 @@ export default {
       'Documentari': documentaryMovies // Documentary movies
     }">
       <div class="p-3">
-        <h2>{{ title }}</h2>
+        <h2 class="mt-5">{{ title }}</h2>
         <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
           <swiper-slide v-for="movie in movieList" :key="movie.id">
             <div class="card">
@@ -266,7 +268,8 @@ export default {
     position: absolute;
     top: 40%;
     left: 30px;
-    
+    display: flex;
+
     h2 {
       font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     }
@@ -275,6 +278,24 @@ export default {
       height: 100px;
       width: 40%;
       overflow: auto;
+    }
+  }
+}
+
+@media (orientation: landscape) {
+  .jumbo-text {
+    flex-direction: column;
+  }
+}
+
+@media (orientation: portrait) {
+  .jumbo-text {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    p {
+      width: 80%;
     }
   }
 }

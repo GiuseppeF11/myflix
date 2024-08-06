@@ -6,6 +6,7 @@ export default {
         return {
             store,
             isScrolled: false,
+            isTogglerClicked: false,
         };
     },
     mounted() {
@@ -22,17 +23,30 @@ export default {
 
             this.isScrolled = scrollPosition > scrollThreshold;
         },
+        handleTogglerClick() { // Aggiungi questa funzione
+            this.isTogglerClicked = !this.isTogglerClicked;
+        },
     },
 };
 </script>
+
 
 <template>
     <nav :class="['navbar', 'navbar-expand-lg', 'px-3', { 'scrolled': isScrolled }]">
         <div class="col-1">
             <img class="logo-netflix" src="/public/img/logo-myflix.png" alt="logo-netflix">
         </div>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+        <button 
+            class="navbar-toggler border custom-toggler" 
+            type="button" 
+            data-bs-toggle="collapse" 
+            data-bs-target="#navbarSupportedContent" 
+            aria-controls="navbarSupportedContent" 
+            aria-expanded="false" 
+            aria-label="Toggle navigation" 
+            @click="handleTogglerClick" 
+            :class="{ 'active': isTogglerClicked }">
+            <span class="fa-solid fa-bars"></span>
         </button>
 
         <div class="collapse navbar-collapse justify-content-between px-2 compact-menu" id="navbarSupportedContent">
@@ -48,7 +62,7 @@ export default {
                         <router-link to="/series" :class="{ 'active': $route.path === '/series' }" class="btn">Serie Tv</router-link>
                     </li>
                     <li class="nav-item">
-                        <router-link to="/my-list" :class="{ 'active': $route.path === '/my-list' }" class="btn">La mia lista</router-link>
+                        <router-link to="/my-list" :class="{ 'active': $route.path === '/my-list' }" class="btn">Preferiti</router-link>
                     </li>
                 </ul>
             </div>
@@ -56,9 +70,9 @@ export default {
                 <input class="form-control mr-sm-2" type="search" placeholder="Cerca" aria-label="Search" v-model="store.searchText">
             </form>
         </div>
-        
     </nav>
 </template>
+
 
 <style lang="scss" scoped>
 .logo-netflix {
@@ -68,34 +82,49 @@ export default {
 }
 
 .form-control:focus {
-    border: 2px solid rgb(0, 0, 0) !important;
-    box-shadow: 0px 0px 10px rgb(204, 204, 204) !important;
+    border: 2px solid rgb(0, 0, 0);
+    box-shadow: 0px 0px 10px rgb(204, 204, 204);
 }
 
 li.nav-item {
     a {
-        color: rgb(220, 220, 220) !important;
-        margin: 10px !important;
-        border-radius: 10px !important;
+        color: rgb(220, 220, 220);
+        margin: 10px;
+        border-radius: 10px;
         &:hover {
-            box-shadow: 0px 1px 10px white !important;
-            transition: 0.5s !important;
+            box-shadow: 0px 1px 10px white;
+            transition: 0.5s;
         }
         &.active {
-            color: white !important;
+            color: white;
         }
     }
 }
 
 .navbar {
-    transition: background-color 0.3s linear !important;
-    background-color: rgba(0, 0, 0, 0) !important;
+    transition: background-color 0.3s linear;
+    background-color: rgba(0, 0, 0, 0);
     width: 100%;
 }
 
 .navbar.scrolled {
-    background-color: #1C1C1C !important;
-    transition: background-color 0.3s linear !important;
+    background-color: #1C1C1C;
+    transition: background-color 0.3s linear;
+}
+
+
+.navbar-toggler {
+    span {
+        color: #FFFFFF;
+    }
+}
+
+.navbar-toggler.active {
+    box-shadow: 0px 0px 10px white !important; 
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
 }
 
 .navbar-collapse {

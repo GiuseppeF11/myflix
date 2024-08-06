@@ -59,11 +59,10 @@ export default {
             if (index !== -1) {
                 store.myList.splice(index, 1);
             } else {
-                // Assicurati di includere tutte le proprietà necessarie
                 store.myList.push({
                     id: movie.id,
                     title: movie.titleOrName,
-                    name: movie.name, // Se hai un nome alternativo per le serie TV
+                    name: movie.name,
                     poster_path: movie.poster,
                     overview: movie.overview,
                     type: movie.type

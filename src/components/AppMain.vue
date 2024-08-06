@@ -36,7 +36,7 @@ export default {
             <h2>Film</h2>
             <div>
                 <ul>
-                    <div class="row row-cols-5 justify-content-around">
+                    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-5 justify-content-around">
                         <li v-for="(movie, i) in fixImgUrl(this.store.movies)" :key="i" class="col">
                             <SingleElement
                                 :id="movie.id"
@@ -58,7 +58,7 @@ export default {
             <h2>Serie Tv</h2>
             <div>
                 <ul>
-                    <div class="row row-cols-5 justify-content-around">
+                    <div class="row row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-5 justify-content-around">
                         <li v-for="(serie, i) in fixImgUrl(this.store.series)" :key="i" class="col">
                             <SingleElement
                                 :id="serie.id"
