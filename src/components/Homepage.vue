@@ -204,7 +204,7 @@ export default {
       'Documentari': documentaryMovies // Documentary movies
     }">
       <div class="p-3">
-        <h2 class="mt-5">{{ title }}</h2>
+        <h2>{{ title }}</h2>
         <swiper :slides-per-view="5" :space-between="10" :breakpoints="breakpoints">
           <swiper-slide v-for="movie in movieList" :key="movie.id">
             <div class="card">
