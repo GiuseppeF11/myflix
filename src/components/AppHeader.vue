@@ -49,7 +49,7 @@ export default {
             <span class="fa-solid fa-bars"></span>
         </button>
 
-        <div class="collapse navbar-collapse justify-content-between px-2 compact-menu" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse px-2" id="navbarSupportedContent">
             <div>
                 <ul class="navbar-nav mr-auto">
                     <li class="nav-item">
@@ -137,6 +137,8 @@ li.nav-item {
         backdrop-filter: blur(10px);        
         align-items: start;
         display: flex;
+        justify-content: center;
+        text-align: center;
     }
 }
 </style>
