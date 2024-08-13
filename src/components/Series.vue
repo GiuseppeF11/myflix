@@ -16,8 +16,8 @@ export default {
     },
     computed: {
         displayedSeries() {
-            const start = (this.currentPage - 1) * 25;
-            const end = this.currentPage * 25;
+            const start = (this.currentPage - 1) * 20;
+            const end = this.currentPage * 20;
             return this.series.slice(start, end);
         }
     },

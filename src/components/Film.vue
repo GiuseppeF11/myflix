@@ -16,8 +16,10 @@ export default {
     },
     computed: {
         displayedmovies() {
-            const start = (this.currentPage - 1) * 25;
-            const end = this.currentPage * 25;
+            const start = (this.currentPage - 1) * 20;
+            const end = this.currentPage * 20;
+            const newList = {... this.movies};
+
             return this.movies.slice(start, end);
         }
     },
@@ -30,6 +32,8 @@ export default {
 
                 // Concatenazione delle serie alla lista corrente
                 this.movies = [...this.movies, ...response.data.results];
+
+                console.log('data result ' ,response.data.results)
 
                 // Aggiornamento del numero totale di pagine
                 this.totalPages = response.data.total_pages;
