@@ -1,148 +1,162 @@
 <script>
-import { store } from '../store';
-import axios from 'axios';
+import { useFavoritesStore } from '../stores/favorites.js';
+import { useAuthStore } from '../stores/auth.js';
+import { isSupabaseConfigured } from '../services/supabase.js';
+import MovieCard from './MovieCard.vue';
+import EmptyState from './EmptyState.vue';
+import AuthModal from './AuthModal.vue';
 
 export default {
   name: 'MyList',
+  components: { MovieCard, EmptyState, AuthModal },
+  setup() {
+    const favorites = useFavoritesStore();
+    const auth = useAuthStore();
+    return { favorites, auth };
+  },
   data() {
     return {
-      myMovies: store.myList,
-      showModal: false,
-      trailerUrl: '',
-      trailerError: false,
+      showAuth: false,
+      authInitialMode: 'login',
+      supabaseEnabled: isSupabaseConfigured,
     };
   },
-  methods: {
-    getImageUrl(image) {
-      return `https://image.tmdb.org/t/p/w1280${image}`;
+  computed: {
+    requiresLogin() {
+      return this.supabaseEnabled && !this.auth.isLoggedIn;
     },
-    toggleMovieInList(movie) {
-      const index = store.myList.findIndex(item => item.id === movie.id);
-      if (index !== -1) {
-        store.myList.splice(index, 1);
-      } else {
-        store.myList.push(movie);
-      }
-      this.myMovies = [...store.myList];
-    },
-    isMovieInList(movie) {
-      return store.myList.some(item => item.id === movie.id);
-    },
-    async playMovieTrailer(movie) {
-      const videos = await this.fetchVideos(movie.id, movie.media_type || 'movie');
-      const trailer = videos.find(video => video.type === 'Trailer' && video.site === 'YouTube');
-      if (trailer) {
-        this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
-        this.showModal = true;
-      } else {
-        this.showTrailerError();
-      }
-    },
-    showTrailerError() {
-      this.trailerError = true;
-      setTimeout(() => {
-        this.trailerError = false;
-      }, 2000);
-    },
-    async playMovieTrailer(movie) {
-    const type = movie.title ? 'movie' : 'tv';
-    const videos = await this.fetchVideos(movie.id, type);
-    const trailer = videos.find(video => video.type === 'Trailer' && video.site === 'YouTube');
-    if (trailer) {
-      this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
-      this.showModal = true;
-    } else {
-      this.showTrailerError();
-    }
   },
-  async fetchVideos(id, type) {
-    const endpoint = type === 'movie' ? `https://api.themoviedb.org/3/movie/${id}/videos` : `https://api.themoviedb.org/3/tv/${id}/videos`;
-    try {
-      const response = await axios.get(endpoint, {
-        params: { api_key: store.apiKey }
-      });
-      return response.data.results;
-    } catch (error) {
-      console.error('Errore nel recupero dei video:', error);
-      return [];
-    }
-  }
-  }
+  methods: {
+    openLogin(mode = 'login') {
+      this.authInitialMode = mode;
+      this.showAuth = true;
+    },
+  },
 };
 </script>
 
 <template>
-  <section class="container-list px-3">
-    <h2 class="">Preferiti</h2>
-    <h5 class="no-film" v-if="myMovies.length === 0">Nessun film presente</h5>
-    <div class="row g-0 row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-5" v-else>
-      <div class="col" v-for="movie in myMovies" :key="movie.id">
-        <div class="card">
-          <div class="card-image">
-            <img :src="getImageUrl(movie.poster_path)" v-if="movie.poster_path != null" alt="">
-            <img src="https://image.pngaaa.com/321/3555321-small.png" :alt="titleOrName" class="poster" v-else>
-          </div>
-          <div class="card-details">
-            <h4>{{ movie.title ? movie.title : movie.name }}</h4>
-            <p>{{ movie.overview }}</p>
-            <div class="d-flex align-items-center gap-3">
-              <button class="btn btn-outline-light trailer_button" @click="playMovieTrailer(movie)">
-                <i class="fa-solid fa-play"></i>
-              </button>
-              <div class="checkbox-wrapper-35">
-                <input
-                  value="private"
-                  name="switch"
-                  :id="'switch-' + movie.id"
-                  type="checkbox"
-                  class="switch"
-                  @change="toggleMovieInList(movie)"
-                  :checked="isMovieInList(movie)"
-                />
-                <label :for="'switch-' + movie.id">
-                  <span class="switch-x-toggletext">
-                    <span v-if="!isMovieInList(movie)" class="switch-x-unchecked">
-                      <span class="switch-x-hiddenlabel"></span>Aggiungi alla lista
-                    </span>
-                    <span v-else class="switch-x-checked">
-                      <span class="switch-x-hiddenlabel"></span>Rimuovi dalla lista
-                    </span>
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
+  <!-- Schermata di accesso richiesto -->
+  <section v-if="requiresLogin" class="login-wall">
+    <div class="login-wall-inner">
+      <i class="fa-solid fa-bookmark login-wall-icon"></i>
+      <h2>I tuoi preferiti ti aspettano</h2>
+      <p>Accedi al tuo account per salvare film e serie TV e ritrovarli sempre.</p>
+      <div class="login-wall-actions">
+        <button class="btn-wall btn-wall-primary" @click="openLogin('login')">
+          <i class="fa-solid fa-right-to-bracket"></i> Accedi
+        </button>
+        <button class="btn-wall btn-wall-secondary" @click="openLogin('signup')">
+          <i class="fa-solid fa-user-plus"></i> Registrati
+        </button>
       </div>
     </div>
-    <!-- Modal per il trailer -->
-    <div class="modal-overlay" v-if="showModal">
-      <div class="modal-content">
-        <span class="close-button" @click="showModal = false">&times;</span>
-        <iframe
-          width="100%"
-          height="100%"
-          :src="trailerUrl"
-          frameborder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowfullscreen
-        ></iframe>
-      </div>
-    </div>
+    <AuthModal v-if="showAuth" :initial-mode="authInitialMode" @close="showAuth = false" />
+  </section>
 
-    <div class="trailer-error" v-if="trailerError">
-      <h2>Trailer non disponibile</h2>
+  <!-- Contenuto normale quando loggato -->
+  <section v-else class="container-list px-3">
+    <h2>Preferiti</h2>
+    <EmptyState v-if="favorites.items.length === 0" message="Nessun titolo nei preferiti" />
+    <div v-else class="card-grid">
+      <div v-for="item in favorites.items" :key="item.media_type + '-' + item.tmdb_id">
+        <MovieCard :item="item" :media-type="item.media_type" />
+      </div>
     </div>
   </section>
 </template>
 
 <style lang="scss" scoped>
+@use '../assets/scss/partials/variables' as *;
+
 .container-list {
-    padding-top: 10vh;
+  padding: 12vh 40px 40px;
+
+  h2 {
+    font-weight: 700;
+    margin-bottom: 24px;
+  }
 }
 
-.no-film {
+.card-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+
+  @media (min-width: 480px)  { grid-template-columns: repeat(4, 1fr); }
+  @media (min-width: 768px)  { grid-template-columns: repeat(5, 1fr); }
+  @media (min-width: 992px)  { grid-template-columns: repeat(6, 1fr); }
+  @media (min-width: 1280px) { grid-template-columns: repeat(7, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .container-list {
+    padding: 12vh 16px 32px;
+  }
+}
+
+// ---- Schermata login richiesto ----
+.login-wall {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-xl $space-md;
+}
+
+.login-wall-inner {
   text-align: center;
-  font-style: italic; 
+  max-width: 420px;
+}
+
+.login-wall-icon {
+  font-size: 3.5rem;
+  color: $color-accent;
+  margin-bottom: $space-lg;
+  display: block;
+}
+
+.login-wall-inner h2 {
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 700;
+  margin-bottom: $space-sm;
+}
+
+.login-wall-inner p {
+  color: $color-text-muted;
+  margin-bottom: $space-lg;
+  line-height: 1.5;
+}
+
+.login-wall-actions {
+  display: flex;
+  gap: $space-md;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-wall {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-sm;
+  border: none;
+  border-radius: $radius-sm;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover { opacity: 0.85; }
+
+  &.btn-wall-primary {
+    background-color: $color-accent;
+    color: $color-text;
+  }
+
+  &.btn-wall-secondary {
+    background-color: rgba(109, 109, 110, 0.7);
+    color: $color-text;
+  }
 }
 </style>

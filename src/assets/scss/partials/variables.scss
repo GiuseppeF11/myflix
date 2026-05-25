@@ -1,0 +1,37 @@
+// ---- Design token MyFlix ----
+
+// Colori
+$color-bg: #1c1c1c;
+$color-surface: #232323;
+$color-accent: #db1927;
+$color-text: #ffffff;
+$color-text-muted: #dcdcdc;
+$color-text-dim: #919191;
+$color-track: #8c8c8e;
+$color-overlay: rgba(0, 0, 0, 0.7);
+$color-overlay-soft: rgba(0, 0, 0, 0.5);
+$color-shadow: rgba(0, 0, 0, 0.5);
+
+// Spaziature
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 16px;
+$space-lg: 24px;
+$space-xl: 40px;
+
+// Raggi
+$radius-sm: 5px;
+$radius-md: 10px;
+
+// Z-index (header sotto le modali)
+$z-header: 100;
+$z-modal: 1000;
+$z-auth: 2000;
+
+// Layout
+$header-height: 10vh;
+$card-image-height: 350px;
+
+// Breakpoint
+$bp-md: 768px;
+$bp-lg: 992px;

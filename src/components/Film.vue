@@ -1,99 +1,37 @@
 <script>
-import axios from 'axios';
-import { store } from '../store';
+import { getPopularMovies } from '../services/tmdb.js';
+import MovieCard from './MovieCard.vue';
+import Pagination from './Pagination.vue';
+import LoadingSkeleton from './LoadingSkeleton.vue';
 
 export default {
+    components: { MovieCard, Pagination, LoadingSkeleton },
     data() {
         return {
-            store,
             movies: [],
             currentPage: 1,
             totalPages: 0,
-            showModal: false,
-            trailerUrl: '',
-            trailerError: false,
+            loading: false,
         };
-    },
-    computed: {
-        displayedmovies() {
-            const start = (this.currentPage - 1) * 20;
-            const end = this.currentPage * 20;
-            const newList = {... this.movies};
-
-            return this.movies.slice(start, end);
-        }
     },
     methods: {
         async fetchMovies() {
+            this.loading = true;
             try {
-                const response = await axios.get('https://api.themoviedb.org/3/movie/popular', {
-                    params: { api_key: store.apiKey, language: 'it-IT', region: 'IT', page: this.currentPage },
-                });
-
-                // Concatenazione delle serie alla lista corrente
-                this.movies = [...this.movies, ...response.data.results];
-
-                console.log('data result ' ,response.data.results)
-
-                // Aggiornamento del numero totale di pagine
-                this.totalPages = response.data.total_pages;
+                const data = await getPopularMovies(this.currentPage);
+                this.movies = data.results;
+                this.totalPages = Math.min(data.total_pages, 500); // TMDB: max pagina = 500
             } catch (error) {
-                console.error('Errore nel recupero delle serie movie:', error);
+                console.error('Errore nel recupero dei film:', error);
+            } finally {
+                this.loading = false;
             }
         },
-        nextPage() {
-            if (this.currentPage < this.totalPages) {
-                this.currentPage++;
-                this.fetchMovies();
-            }
+        goToPage(page) {
+            this.currentPage = page;
+            this.fetchMovies();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         },
-        prevPage() {
-            if (this.currentPage > 1) {
-                this.currentPage--;
-                this.fetchMovies();
-            }
-        },
-        toggleMovieInList(movie) {
-            const index = store.myList.findIndex(item => item.id === movie.id);
-            if (index !== -1) {
-                store.myList.splice(index, 1);
-            } else {
-                store.myList.push(movie);
-            }
-        },
-        isMovieInList(movie) {
-            return store.myList.some(item => item.id === movie.id);
-        },
-        getImageUrl(image) {
-            return `https://image.tmdb.org/t/p/w1280${image}`;
-        },
-        async playMovieTrailer(movie) {
-            const videos = await this.fetchMovieVideos(movie.id);
-            const trailer = videos.find(video => video.type === 'Trailer' && video.site === 'YouTube');
-            if (trailer) {
-                this.trailerUrl = `https://www.youtube.com/embed/${trailer.key}`;
-                this.showModal = true;
-            } else {
-                this.showTrailerError();
-            }
-        },
-        showTrailerError() {
-            this.trailerError = true;
-            setTimeout(() => {
-                this.trailerError = false;
-            }, 2000);
-        },
-        async fetchMovieVideos(movieId) {
-            try {
-                const response = await axios.get(`https://api.themoviedb.org/3/movie/${movieId}/videos`, {
-                    params: { api_key: store.apiKey }
-                });
-                return response.data.results;
-            } catch (error) {
-                console.error('Errore nel recupero dei video del film:', error);
-                return [];
-            }
-        }
     },
     mounted() {
         this.fetchMovies();
@@ -104,101 +42,47 @@ export default {
 <template>
     <section class="container-film">
         <h2>Film</h2>
-        <div class="row g-0 row-cols-2 row-cols-sm-3 row-cols-md-3 row-cols-lg-5">
-            <div class="col" v-for="movie in displayedmovies" :key="movie.id">
-                <div class="card">
-                    <div class="card-image">
-                        <img :src="getImageUrl(movie.poster_path)" alt="">
-                    </div>
-                    <div class="card-details">
-                        <h4>{{ movie.original_title }}</h4>
-                        <p>{{ movie.overview }}</p>
-                        <div class="d-flex align-items-center gap-3">
-                            <button class="btn btn-outline-light trailer_button" @click="playMovieTrailer(movie)">
-                                <i class="fa-solid fa-play"></i>
-                            </button>
-                            <div class="checkbox-wrapper-35">
-                                <input
-                                    value="private"
-                                    name="switch"
-                                    :id="'switch-' + movie.id"
-                                    type="checkbox"
-                                    class="switch"
-                                    @change="toggleMovieInList(movie)"
-                                    :checked="isMovieInList(movie)"
-                                />
-                                <label :for="'switch-' + movie.id">
-                                    <span class="switch-x-toggletext">
-                                        <span v-if="!isMovieInList(movie)" class="switch-x-unchecked">
-                                            <span class="switch-x-hiddenlabel"></span>Aggiungi alla lista
-                                        </span>
-                                        <span v-else class="switch-x-checked">
-                                            <span class="switch-x-hiddenlabel"></span>Rimuovi dalla lista
-                                        </span>
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <LoadingSkeleton v-if="loading" />
+        <div v-else class="card-grid">
+            <div v-for="movie in movies" :key="movie.id">
+                <MovieCard :item="movie" media-type="movie" />
             </div>
         </div>
-        <div class="pagination">
-            <button class="btn btn-outline-light" @click="prevPage" :disabled="currentPage === 1"><i class="fa-solid fa-arrow-left"></i></button>
-            <span> {{ currentPage }} di {{ totalPages }}</span>
-            <button class="btn btn-outline-light" @click="nextPage" :disabled="currentPage === totalPages"><i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-
-        <!-- Modal per il trailer -->
-        <div class="modal-overlay" v-if="showModal">
-            <div class="modal-content">
-                <span class="close-button" @click="showModal = false">&times;</span>
-                <iframe
-                    width="100%"
-                    height="100%"
-                    :src="trailerUrl"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                ></iframe>
-            </div>
-        </div>
-
-        <div class="trailer-error" v-if="trailerError">
-            <h2>Trailer non disponibile</h2>
-        </div>
+        <Pagination
+            :current-page="currentPage"
+            :total-pages="totalPages"
+            @prev="goToPage(currentPage - 1)"
+            @next="goToPage(currentPage + 1)"
+        />
     </section>
 </template>
 
-
-
 <style lang="scss" scoped>
+@use '../assets/scss/partials/variables' as *;
+
 .container-film {
-    padding: 10vh 15px;
-}
+    padding: 12vh 40px 40px;
 
-.card {
-    margin-bottom: 20px;
-}
-
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-    button {
-        margin: 0 10px;
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        &:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-    }
-    span {
-        font-size: 16px;
+    h2 {
+        font-weight: 700;
+        margin-bottom: 24px;
     }
 }
 
+.card-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(3, 1fr);
+
+    @media (min-width: 480px)  { grid-template-columns: repeat(4, 1fr); }
+    @media (min-width: 768px)  { grid-template-columns: repeat(5, 1fr); }
+    @media (min-width: 992px)  { grid-template-columns: repeat(6, 1fr); }
+    @media (min-width: 1280px) { grid-template-columns: repeat(7, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .container-film {
+        padding: 12vh 16px 32px;
+    }
+}
 </style>

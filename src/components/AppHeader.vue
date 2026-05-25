@@ -1,142 +1,164 @@
 <script>
-import { store } from '../store.js';
+import { useSearchStore } from '../stores/search.js';
+import ProfileMenu from './ProfileMenu.vue';
 
 export default {
+    components: { ProfileMenu },
+    setup() {
+        const search = useSearchStore();
+        return { search };
+    },
     data() {
         return {
-            store,
             isScrolled: false,
-            isTogglerClicked: false,
         };
     },
     mounted() {
         window.addEventListener('scroll', this.handleScroll);
     },
-    beforeDestroy() {
+    beforeUnmount() {
         window.removeEventListener('scroll', this.handleScroll);
     },
     methods: {
         handleScroll() {
-            const scrollPosition = window.scrollY;
-            const windowHeight = window.innerHeight;
-            const scrollThreshold = windowHeight * 0.1;
-
-            this.isScrolled = scrollPosition > scrollThreshold;
-        },
-        handleTogglerClick() { // Aggiungi questa funzione
-            this.isTogglerClicked = !this.isTogglerClicked;
+            this.isScrolled = window.scrollY > window.innerHeight * 0.1;
         },
     },
 };
 </script>
 
-
 <template>
-    <nav :class="['navbar', 'navbar-expand-lg', 'px-3', { 'scrolled': isScrolled }]">
-        <div class="col-1">
-            <img class="logo-netflix" src="/public/img/logo-myflix.png" alt="logo-netflix">
+    <div class="top-bar" :class="{ scrolled: isScrolled }">
+        <div class="left">
+            <router-link to="/" class="logo-link">
+                <img class="logo-netflix" src="/public/img/logo-myflix.png" alt="MyFlix">
+            </router-link>
+            <nav class="desktop-nav" aria-label="Navigazione">
+                <router-link to="/" :class="{ active: $route.path === '/' }">Home</router-link>
+                <router-link to="/film" :class="{ active: $route.path === '/film' }">Film</router-link>
+                <router-link to="/series" :class="{ active: $route.path === '/series' }">Serie TV</router-link>
+                <router-link to="/my-list" :class="{ active: $route.path === '/my-list' }">Preferiti</router-link>
+            </nav>
         </div>
-        <button 
-            class="navbar-toggler border custom-toggler" 
-            type="button" 
-            data-bs-toggle="collapse" 
-            data-bs-target="#navbarSupportedContent" 
-            aria-controls="navbarSupportedContent" 
-            aria-expanded="false" 
-            aria-label="Toggle navigation" 
-            @click="handleTogglerClick" 
-            :class="{ 'active': isTogglerClicked }">
-            <span class="fa-solid fa-bars"></span>
-        </button>
 
-        <div class="collapse navbar-collapse justify-content-between px-2" id="navbarSupportedContent">
-            <div>
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <router-link to="/" :class="{ 'active': $route.path === '/' }" class="btn">Home<span class="sr-only"></span></router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/film" :class="{ 'active': $route.path === '/film' }" class="btn">Film</router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/series" :class="{ 'active': $route.path === '/series' }" class="btn">Serie Tv</router-link>
-                    </li>
-                    <li class="nav-item">
-                        <router-link to="/my-list" :class="{ 'active': $route.path === '/my-list' }" class="btn">Preferiti</router-link>
-                    </li>
-                </ul>
-            </div>
-            <form class="form-inline my-2 my-lg-0" v-if="$route.path === '/'">
-                <input class="form-control mr-sm-2" type="search" placeholder="Cerca" aria-label="Search" v-model="store.searchText">
+        <div class="right">
+            <!-- Barra di ricerca: visibile su desktop in tutte le sezioni -->
+            <form class="search desktop-search" @submit.prevent>
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" placeholder="Cerca film o serie…" aria-label="Cerca" v-model="search.text">
             </form>
+            <ProfileMenu />
         </div>
-    </nav>
+    </div>
 </template>
 
-
 <style lang="scss" scoped>
+@use '../assets/scss/partials/variables' as *;
+
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-md;
+    height: 100%;
+    padding: 0 $space-xl;
+    transition: background-color 0.3s linear;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 100%);
+
+    &.scrolled {
+        background: $color-bg;
+    }
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: $space-xl;
+    min-width: 0;
+}
+
+.logo-link {
+    display: flex;
+    align-items: center;
+}
+
 .logo-netflix {
-    width: 100%;
-    min-width: 100px;
-    margin-right: 30px;
+    width: 110px;
+    max-width: 110px;
 }
 
-.form-control:focus {
-    border: 2px solid rgb(0, 0, 0);
-    box-shadow: 0px 0px 10px rgb(204, 204, 204);
-}
+.desktop-nav {
+    display: flex;
+    gap: $space-lg;
 
-li.nav-item {
     a {
-        color: rgb(220, 220, 220);
-        margin: 10px;
-        border-radius: 10px;
+        color: $color-text-muted;
+        font-size: 0.95rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s ease;
+
         &:hover {
-            box-shadow: 0px 1px 10px white;
-            transition: 0.5s;
+            color: $color-text;
         }
+
         &.active {
-            color: white;
+            color: $color-text;
+            font-weight: 700;
         }
     }
 }
 
-.navbar {
-    transition: background-color 0.3s linear;
-    background-color: rgba(0, 0, 0, 0);
-    width: 100%;
+.right {
+    display: flex;
+    align-items: center;
+    gap: $space-md;
 }
 
-.navbar.scrolled {
-    background-color: #1C1C1C;
-    transition: background-color 0.3s linear;
-}
+.search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: $radius-sm;
+    padding: 6px 12px;
 
+    i {
+        color: $color-text-dim;
+        font-size: 0.9rem;
+    }
 
-.navbar-toggler {
-    span {
-        color: #FFFFFF;
+    input {
+        background: none;
+        border: none;
+        outline: none;
+        color: $color-text;
+        width: 180px;
+
+        &::placeholder {
+            color: $color-text-dim;
+        }
+    }
+
+    &:focus-within {
+        border-color: $color-text;
     }
 }
 
-.navbar-toggler.active {
-    box-shadow: 0px 0px 10px white !important; 
-}
+// Mobile: niente nav inline (c'è la bottom-nav); la ricerca è nella bottom-nav.
+@media (max-width: $bp-lg) {
+    .top-bar {
+        padding: 0 $space-md;
+    }
 
-.navbar-toggler:focus {
-    box-shadow: none;
-}
+    .desktop-nav {
+        display: none;
+    }
 
-.navbar-collapse {
-    border-radius: 10px;
-}
-
-@media (max-width: 992px) {
-    .navbar-collapse {
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(10px);        
-        align-items: start;
-        display: flex;
+    // La ricerca su mobile è nella bottom-nav, non nell'header
+    .desktop-search {
+        display: none;
     }
 }
 </style>

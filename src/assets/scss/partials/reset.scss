@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 * {
     margin: 0;
     padding: 0;
@@ -5,10 +7,10 @@
 }
 
 header {
-    height: 10vh;
+    height: $header-height;
     position: fixed;
     width: 100%;
-    z-index: 1000;
+    z-index: $z-header;
 }
 
 main {
@@ -20,202 +22,18 @@ main {
 *::-webkit-scrollbar {
     width: 5px;
 }
-    
+
 *::-webkit-scrollbar-track {
-    background: #1c1c1c;
+    background: $color-bg;
 }
-    
+
 *::-webkit-scrollbar-thumb {
-    background-color: #919191;
-    border-radius: 10px;
-    border: 3px solid #ffffff;
+    background-color: $color-text-dim;
+    border-radius: $radius-md;
+    border: 3px solid $color-text;
 }
-
-
-
-//ADD TO LIST 
-
-.checkbox-wrapper-35 .switch {
-    display: none;
-  }
-  
-  .checkbox-wrapper-35 .switch + label {
-    -webkit-box-align: center;
-    -webkit-align-items: center;
-    -ms-flex-align: center;
-    align-items: center;
-    color: #e8e8e8;
-    cursor: pointer;
-    display: -webkit-box;
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 12px;
-    line-height: 15px;
-    position: relative;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-  
-  .checkbox-wrapper-35 .switch + label::before,
-    .checkbox-wrapper-35 .switch + label::after {
-    content: '';
-    display: block;
-  }
-  
-  .checkbox-wrapper-35 .switch + label::before {
-    background-color: #8c8c8e;
-    border-radius: 500px;
-    height: 15px;
-    margin-right: 8px;
-    -webkit-transition: background-color 0.125s ease-out;
-    transition: background-color 0.125s ease-out;
-    width: 25px;
-    font-size: 30px;
-  }
-  
-  .checkbox-wrapper-35 .switch + label::after {
-    background-color: #fff;
-    border-radius: 13px;
-    box-shadow: 0 3px 1px 0 rgba(37, 34, 71, 0.05), 0 2px 2px 0 rgba(37, 34, 71, 0.1), 0 3px 3px 0 rgba(37, 34, 71, 0.05);
-    height: 13px;
-    left: 1px;
-    position: absolute;
-    top: 1px;
-    -webkit-transition: -webkit-transform 0.125s ease-out;
-    transition: -webkit-transform 0.125s ease-out;
-    transition: transform 0.125s ease-out;
-    transition: transform 0.125s ease-out, -webkit-transform 0.125s ease-out;
-    width: 13px;
-  }
-  
-  .checkbox-wrapper-35 .switch + label .switch-x-text {
-    display: block;
-    margin-right: .3em;
-  }
-  
-  .checkbox-wrapper-35 .switch + label .switch-x-toggletext {
-    display: block;
-    font-weight: bold;
-    height: 15px;
-    overflow: hidden;
-    position: relative;
-    width: 300px;
-  }
-  
-  .checkbox-wrapper-35 .switch + label .switch-x-unchecked,
-    .checkbox-wrapper-35 .switch + label .switch-x-checked {
-    left: 0;
-    position: absolute;
-    top: 0;
-    -webkit-transition: opacity 0.125s ease-out, -webkit-transform 0.125s ease-out;
-    transition: opacity 0.125s ease-out, -webkit-transform 0.125s ease-out;
-    transition: transform 0.125s ease-out, opacity 0.125s ease-out;
-    transition: transform 0.125s ease-out, opacity 0.125s ease-out, -webkit-transform 0.125s ease-out;
-  }
-  
-  .checkbox-wrapper-35 .switch + label .switch-x-unchecked {
-    opacity: 1;
-    -webkit-transform: none;
-    transform: none;
-  }
-  
-  .checkbox-wrapper-35 .switch + label .switch-x-checked {
-    opacity: 0;
-    -webkit-transform: translate3d(0, 100%, 0);
-    transform: translate3d(0, 100%, 0);
-  }
-  
-  .checkbox-wrapper-35 .switch + label .switch-x-hiddenlabel {
-    position: absolute;
-    visibility: hidden;
-  }
-  
-  .checkbox-wrapper-35 .switch:checked + label::before {
-    background-color: #DB1927;
-  }
-  
-  .checkbox-wrapper-35 .switch:checked + label::after {
-    -webkit-transform: translate3d(10px, 0, 0);
-    transform: translate3d(10px, 0, 0);
-  }
-  
-  .checkbox-wrapper-35 .switch:checked + label .switch-x-unchecked {
-    opacity: 0;
-    -webkit-transform: translate3d(0, -100%, 0);
-    transform: translate3d(0, -100%, 0);
-  }
-  
-  .checkbox-wrapper-35 .switch:checked + label .switch-x-checked {
-    opacity: 1;
-    -webkit-transform: none;
-    transform: none;
-  }
-
-  //CARDS
-
-  .card {
-    box-shadow: 0px 0px 10px rgb(0, 0, 0);
-    background-color: #1c1c1c;
-    border-radius: 5px;
-    position: relative; 
-    overflow: hidden;
-    scale: 0.9;
-    transition: transform linear 0.3s;
-    &:hover {
-        transform: scale(1.1);
-        .card-image {
-            filter: brightness(20%); 
-        }
-        .card-details {
-            display: block;
-        }
-    }
-    .card-image {
-        height: 350px;
-        transition: linear 0.1s;
-        cursor: pointer;
-        position: relative; 
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    }
-    .card-details {
-        position: absolute;
-        display: none;
-        transition: linear 0.3s;
-        color: whitesmoke;
-        padding: 10px;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.7); 
-        z-index: 10;
-        h4 {
-            margin-bottom: 20px;
-        }
-        p {
-            height: 200px;
-            overflow: auto;
-        }
-    }
-}
-
-
-.trailer_button {
-  font-size: 20px;
-  padding: 0 10px;
-}
-
 
 // PLAYER TRAILER
-
 
 .modal-overlay {
   position: fixed;
@@ -226,20 +44,20 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.5);
+  z-index: $z-modal;
+  background-color: $color-overlay-soft;
 }
 
 .modal-content {
-  background: #1C1C1C;
+  background: $color-bg;
   overflow: auto;
   height: 80%;
   width: 100%;
   max-width: 1000px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 5px 15px $color-shadow;
   position: relative;
-  padding: 10px;
-  border-radius: 10px;
+  padding: $space-sm + 2px;
+  border-radius: $radius-md;
 }
 
 .close-button {
@@ -250,6 +68,7 @@ main {
   cursor: pointer;
   color: #ababab;
   transition: linear 0.1s;
+  z-index: 1;
   &:hover {
     color: white;
   }
@@ -261,7 +80,7 @@ iframe {
   height: 100%;
 }
 
-//TRAILER ERROR
+// TRAILER ERROR
 
 .trailer-error {
   position: fixed;
@@ -271,8 +90,8 @@ iframe {
   transform: translate(-50%, -50%);
   background-color: rgba(0, 0, 0, 0.91);
   color: white;
-  padding: 20px;
-  border-radius: 10px;
-  z-index: 1000;
+  padding: $space-lg - 4px;
+  border-radius: $radius-md;
+  z-index: $z-modal;
   text-align: center;
 }

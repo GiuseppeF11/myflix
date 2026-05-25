@@ -1,0 +1,273 @@
+<script>
+import { getBackdropUrl } from '../utils/images.js';
+
+export default {
+  name: 'DetailModal',
+  props: {
+    show: { type: Boolean, default: false },
+    loading: { type: Boolean, default: false },
+    details: { type: Object, default: null },
+    isFav: { type: Boolean, default: false },
+  },
+  emits: ['close', 'play', 'toggle'],
+  computed: {
+    title() {
+      return this.details?.title || this.details?.name || '';
+    },
+    year() {
+      const date = this.details?.release_date || this.details?.first_air_date || '';
+      return date ? date.slice(0, 4) : '';
+    },
+    rating() {
+      const v = this.details?.vote_average;
+      return typeof v === 'number' && v > 0 ? v.toFixed(1) : null;
+    },
+    voteCount() {
+      return this.details?.vote_count || 0;
+    },
+    runtime() {
+      const r = this.details?.runtime;
+      if (r) return `${r} min`;
+      const seasons = this.details?.number_of_seasons;
+      if (seasons) return `${seasons} stagion${seasons > 1 ? 'i' : 'e'}`;
+      return '';
+    },
+    genres() {
+      return (this.details?.genres || []).map((g) => g.name);
+    },
+    backdrop() {
+      return getBackdropUrl(this.details?.backdrop_path || this.details?.poster_path);
+    },
+  },
+};
+</script>
+
+<template>
+  <div class="detail-overlay" v-if="show" @click.self="$emit('close')">
+    <div class="detail-card">
+      <!-- Pulsante chiudi fisso, non scrolla con il contenuto -->
+      <button class="detail-close" @click="$emit('close')" aria-label="Chiudi">&times;</button>
+
+      <!-- Area scorrevole interna -->
+      <div class="detail-scroll">
+        <div v-if="loading" class="detail-loading">Caricamento…</div>
+
+        <template v-else-if="details">
+          <div class="detail-hero">
+            <img :src="backdrop" :alt="title" />
+            <h2 class="detail-title">{{ title }}</h2>
+          </div>
+
+          <div class="detail-body">
+            <div class="detail-meta">
+              <span v-if="rating" class="rating">
+                <i class="fa-solid fa-star"></i> {{ rating }} <span class="rating-max">/ 10</span>
+              </span>
+              <span v-if="voteCount" class="votes">({{ voteCount.toLocaleString('it-IT') }} voti)</span>
+              <span v-if="year" class="dot">•</span>
+              <span v-if="year">{{ year }}</span>
+              <span v-if="runtime" class="dot">•</span>
+              <span v-if="runtime">{{ runtime }}</span>
+            </div>
+
+            <p v-if="genres.length" class="detail-genres">{{ genres.join(' · ') }}</p>
+
+            <div class="detail-actions">
+              <button class="btn-hero btn-play" @click="$emit('play')">
+                <i class="fa-solid fa-play"></i> Riproduci
+              </button>
+              <button class="btn-hero btn-secondary" @click="$emit('toggle')">
+                <i :class="isFav ? 'fa-solid fa-check' : 'fa-solid fa-plus'"></i>
+                {{ isFav ? 'Nella lista' : 'La mia lista' }}
+              </button>
+            </div>
+
+            <p class="detail-overview">{{ details.overview || 'Descrizione non disponibile.' }}</p>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+@use '../assets/scss/partials/variables' as *;
+
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal + 200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5vh 16px;
+  overflow: hidden; // scrollbar resta DENTRO la modale
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+.detail-card {
+  position: relative;
+  width: 100%;
+  max-width: 880px;
+  max-height: 88vh;     // altezza massima vincolata alla viewport
+  display: flex;
+  flex-direction: column;
+  background-color: $color-surface;
+  border-radius: $radius-md;
+  overflow: hidden;     // nasconde il border-radius sul hero image
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+}
+
+// Area scorrevole interna: il pulsante chiudi resta fisso fuori da qui
+.detail-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0; // necessario in flexbox per permettere lo scroll figlio
+
+  // Scrollbar sottile stile Netflix
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
+}
+
+.detail-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: $color-text;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #000;
+  }
+}
+
+.detail-loading {
+  padding: 60px;
+  text-align: center;
+  font-style: italic;
+  color: $color-text-dim;
+}
+
+.detail-hero {
+  position: relative;
+
+  img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, $color-surface 0%, rgba(35, 35, 35, 0.2) 60%, rgba(35, 35, 35, 0) 100%);
+  }
+
+  .detail-title {
+    position: absolute;
+    bottom: 16px;
+    left: 24px;
+    right: 24px;
+    z-index: 1;
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    font-weight: 800;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+  }
+}
+
+.detail-body {
+  padding: $space-md $space-lg $space-xl;
+}
+
+.detail-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: $color-text-muted;
+  font-size: 0.95rem;
+  margin-bottom: $space-sm;
+
+  .rating {
+    color: #f5c518;
+    font-weight: 700;
+  }
+
+  .rating-max {
+    color: $color-text-dim;
+    font-weight: 400;
+  }
+
+  .votes {
+    color: $color-text-dim;
+  }
+
+  .dot {
+    color: $color-text-dim;
+  }
+}
+
+.detail-genres {
+  color: $color-text-dim;
+  font-size: 0.9rem;
+  margin-bottom: $space-md;
+}
+
+.detail-actions {
+  display: flex;
+  gap: $space-md;
+  flex-wrap: wrap;
+  margin-bottom: $space-md;
+}
+
+.detail-overview {
+  line-height: 1.5;
+  color: $color-text-muted;
+}
+
+.btn-hero {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-sm;
+  border: none;
+  border-radius: $radius-sm;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+
+  &.btn-play {
+    background-color: $color-text;
+    color: #000;
+    &:hover { opacity: 0.85; }
+  }
+
+  &.btn-secondary {
+    background-color: rgba(109, 109, 110, 0.7);
+    color: $color-text;
+    &:hover { background-color: rgba(109, 109, 110, 0.5); }
+  }
+}
+</style>
