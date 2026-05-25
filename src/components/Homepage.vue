@@ -138,7 +138,7 @@ export default {
 
     <!-- Righe di film -->
     <template v-for="(movieList, title) in {
-      'Novità su Netflix': movies,
+      'Novità su Myflix': movies,
       'Film più votati': topRatedMovies,
       'Film più visti': popularMovies,
       'Film horror': horrorMovies,
