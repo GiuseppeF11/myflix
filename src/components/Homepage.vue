@@ -8,6 +8,7 @@ import { useSearchStore } from '../stores/search.js';
 import { useFavoritesStore } from '../stores/favorites.js';
 import MovieCard from './MovieCard.vue';
 import TrailerModal from './TrailerModal.vue';
+import PageLoader from './PageLoader.vue';
 
 export default {
   components: {
@@ -15,6 +16,7 @@ export default {
     SwiperSlide,
     MovieCard,
     TrailerModal,
+    PageLoader,
   },
   setup() {
     const search = useSearchStore();
@@ -43,6 +45,7 @@ export default {
       },
       trailerUrl: '',
       trailerError: false,
+      loading: true,
     };
   },
   created() {
@@ -50,6 +53,7 @@ export default {
   },
   methods: {
     async fetchMoviesData() {
+      this.loading = true;
       try {
         const [nowPlaying, topRated, popular, horror, romance, action, sciFi, comedy, documentary] =
           await Promise.all([
@@ -75,6 +79,8 @@ export default {
         this.jumbo_data = this.movies[Math.floor(Math.random() * this.movies.length)] || {};
       } catch (error) {
         console.error('Errore nel recupero dei film:', error);
+      } finally {
+        this.loading = false;
       }
     },
     playJumboMovieTrailer() {
@@ -110,6 +116,11 @@ export default {
 
 <template>
   <div v-if="!search.text.trim()">
+
+    <!-- Loader durante il fetch iniziale -->
+    <PageLoader :visible="loading" />
+
+    <template v-if="!loading">
     <!-- Hero / Billboard -->
     <section class="hero" v-if="jumbo_data.id">
       <div class="hero-bg">
@@ -158,6 +169,7 @@ export default {
       </div>
     </template>
 
+    </template> <!-- fine v-else loading -->
   </div>
 </template>
 
@@ -279,4 +291,5 @@ export default {
     padding: $space-md;
   }
 }
+
 </style>

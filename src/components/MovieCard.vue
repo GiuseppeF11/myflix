@@ -241,14 +241,25 @@ export default {
   }
 }
 
-// Touch / mobile: overlay sempre visibile ma solo con il titolo (niente bottoni).
+// Touch / mobile: overlay sempre visibile, gradiente più profondo, solo titolo.
 @media (hover: none) {
   .overlay {
     opacity: 1;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.6)  35%,
+      rgba(0, 0, 0, 0.1)  65%,
+      rgba(0, 0, 0, 0)    100%
+    );
   }
 
   .overlay-actions {
     display: none;
+  }
+
+  .overlay-title {
+    font-size: 0.68rem;
   }
 }
 

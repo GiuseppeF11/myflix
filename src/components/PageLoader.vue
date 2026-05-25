@@ -1,7 +1,13 @@
 <template>
   <transition name="loader-fade">
     <div v-if="visible" class="loader-overlay" aria-hidden="true">
-      <span class="loader"></span>
+      <div class="loader">
+        <div class="ring"></div>
+        <div class="ring ring--delay"></div>
+        <div class="play-btn">
+          <div class="play-triangle"></div>
+        </div>
+      </div>
     </div>
   </transition>
 </template>
@@ -24,50 +30,73 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(28, 28, 28, 0.75);
-  backdrop-filter: blur(3px);
+  background-color: rgba(28, 28, 28, 0.85);
+  backdrop-filter: blur(4px);
 }
 
-/* ---- Loader (CSS fornito dall'utente, invariato) ---- */
+/* ---- Wrapper ---- */
 .loader {
-  display: block;
-  width: 84px;
-  height: 84px;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
 }
 
-.loader:before,
-.loader:after {
-  content: "";
+/* ---- Anelli pulsanti ---- */
+.ring {
   position: absolute;
-  left: 50%;
-  bottom: 0;
-  width: 64px;
-  height: 64px;
   border-radius: 50%;
-  background: #db1927;
-  transform: translate(-50%, -100%) scale(0);
-  animation: push_401 2s infinite linear;
+  border: 2px solid rgba(219, 25, 39, 0.75);
+  animation: pulse-ring 2s ease-out infinite;
 }
 
-.loader:after {
+.ring--delay {
   animation-delay: 1s;
 }
 
-@keyframes push_401 {
-  0%,
-  50% {
-    transform: translate(-50%, 0%) scale(1);
-  }
-  100% {
-    transform: translate(-50%, -100%) scale(0);
-  }
+@keyframes pulse-ring {
+  0%   { width: 58px;  height: 58px;  opacity: 1; }
+  100% { width: 140px; height: 140px; opacity: 0; }
 }
 
-/* ---- Transizione fade dell'overlay ---- */
+/* ---- Bottone play centrale ---- */
+.play-btn {
+  position: relative;
+  z-index: 1;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #db1927;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 0 0 rgba(219, 25, 39, 0.5),
+    0 4px 24px rgba(219, 25, 39, 0.4);
+  animation: pulse-btn 2s ease-in-out infinite;
+}
+
+@keyframes pulse-btn {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0  0px rgba(219, 25, 39, 0.4), 0 4px 24px rgba(219, 25, 39, 0.4); }
+  50%       { transform: scale(0.94); box-shadow: 0 0 0 10px rgba(219, 25, 39, 0),   0 4px 24px rgba(219, 25, 39, 0.2); }
+}
+
+/* ---- Triangolo play (CSS puro) ---- */
+.play-triangle {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 11px 0 11px 20px;
+  border-color: transparent transparent transparent #ffffff;
+  margin-left: 5px; /* centramento ottico */
+}
+
+/* ---- Transizione fade ---- */
 .loader-fade-enter-active,
 .loader-fade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
 }
 .loader-fade-enter-from,
 .loader-fade-leave-to {
