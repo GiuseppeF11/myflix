@@ -69,7 +69,7 @@ export default {
     height: 100%;
     padding: 0 $space-xl;
     transition: background-color 0.3s linear;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 100%);
+    background: linear-gradient(180deg, rgb(0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
 
     &.scrolled {
         background: $color-bg;
