@@ -1,9 +1,14 @@
 <script>
 import { getBackdropUrl } from '../utils/images.js';
 import { getWatchProviders } from '../services/tmdb.js';
+import { useAuthStore } from '../stores/auth.js';
 
 export default {
   name: 'DetailModal',
+  setup() {
+    const auth = useAuthStore();
+    return { auth };
+  },
   props: {
     show: { type: Boolean, default: false },
     loading: { type: Boolean, default: false },
@@ -113,7 +118,7 @@ export default {
               <button class="btn-hero btn-play" @click="$emit('play')">
                 <i class="fa-solid fa-play"></i> Riproduci
               </button>
-              <button class="btn-hero btn-secondary" @click="$emit('toggle')">
+              <button v-if="auth.user" class="btn-hero btn-secondary" @click="$emit('toggle')">
                 <i :class="isFav ? 'fa-solid fa-check' : 'fa-solid fa-plus'"></i>
                 {{ isFav ? 'Nella lista' : 'La mia lista' }}
               </button>

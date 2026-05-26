@@ -63,6 +63,7 @@ export default {
           class="msf-input"
           placeholder="Cerca film o serie…"
           v-model="search.text"
+          @input="search.run()"
           aria-label="Cerca"
         />
         <button
