@@ -39,11 +39,25 @@ export default {
         'search.text'(val) {
             // Sulle rotte bare (es. /reset-password) la ricerca non è disponibile.
             if (this.$route.meta.bare) return;
-            // Se si cerca mentre non si è in home, vai in home dove i risultati sono visibili.
-            if (val && this.$route.path !== '/') {
+            if (val.trim()) {
+                // Testo presente → vai sulla pagina di ricerca (se non ci sei già)
+                if (this.$route.path !== '/search') {
+                    this.$router.push('/search');
+                }
+            } else if (this.$route.path === '/search' && window.innerWidth >= 992) {
+                // Testo cancellato su desktop → torna in Home
+                // Su mobile l'utente resta su /search (empty state visibile)
                 this.$router.push('/');
             }
             this.search.run();
+        },
+        '$route'(to) {
+            // Tornando in Home si azzera la ricerca (testo + filtri)
+            if (to.path === '/') {
+                this.search.text = '';
+                this.search.setGenres([]);
+                this.search.resetFilters();
+            }
         },
     },
 };

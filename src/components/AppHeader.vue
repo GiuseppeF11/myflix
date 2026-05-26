@@ -23,6 +23,9 @@ export default {
         handleScroll() {
             this.isScrolled = window.scrollY > window.innerHeight * 0.1;
         },
+        clearSearch() {
+            this.search.text = '';
+        },
     },
 };
 </script>
@@ -44,8 +47,11 @@ export default {
         <div class="right">
             <!-- Barra di ricerca: visibile su desktop in tutte le sezioni -->
             <form class="search desktop-search" @submit.prevent>
-                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
                 <input type="search" placeholder="Cerca film o serie…" aria-label="Cerca" v-model="search.text">
+                <button v-if="search.text" class="search-clear-btn" type="button" @click="clearSearch" aria-label="Cancella ricerca">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </form>
             <ProfileMenu />
         </div>
@@ -119,14 +125,18 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: $radius-sm;
-    padding: 6px 12px;
+    background-color: rgba(255, 255, 255, 0.07);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-radius: 24px;
+    padding: 7px 16px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
-    i {
+    .search-icon {
         color: $color-text-dim;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+        transition: color 0.2s ease;
     }
 
     input {
@@ -134,15 +144,50 @@ export default {
         border: none;
         outline: none;
         color: $color-text;
+        font-size: 0.9rem;
         width: 180px;
+        transition: width 0.25s ease;
 
         &::placeholder {
             color: $color-text-dim;
         }
+
+        &::-webkit-search-cancel-button {
+            display: none;
+        }
+    }
+
+    .search-clear-btn {
+        background: none;
+        border: none;
+        color: $color-text-dim;
+        cursor: pointer;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        flex-shrink: 0;
+        line-height: 1;
+        transition: color 0.15s ease;
+
+        &:hover {
+            color: $color-text;
+        }
     }
 
     &:focus-within {
-        border-color: $color-text;
+        border-color: rgba(255, 255, 255, 0.5);
+        background-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+
+        .search-icon {
+            color: $color-text-muted;
+        }
+
+        input {
+            width: 240px;
+        }
     }
 }
 

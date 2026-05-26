@@ -19,6 +19,8 @@ export default {
   data() {
     return {
       mode: this.initialMode,
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
       passwordTouched: false,
@@ -47,6 +49,8 @@ export default {
       this.error = '';
       this.info  = '';
       this.passwordTouched = false;
+      this.firstName = '';
+      this.lastName  = '';
     },
     onPasswordInput(val) {
       this.password = val;
@@ -71,7 +75,10 @@ export default {
           await this.auth.signIn(this.email, this.password);
           this.$emit('close');
         } else {
-          const data = await this.auth.signUp(this.email, this.password);
+          const data = await this.auth.signUp(this.email, this.password, {
+            firstName: this.firstName,
+            lastName:  this.lastName,
+          });
           if (data.session) {
             await this.auth.signIn(this.email, this.password);
             this.$emit('close');
@@ -108,6 +115,32 @@ export default {
       </p>
 
       <form @submit.prevent="submit" novalidate>
+        <!-- Nome + Cognome (solo signup) -->
+        <div v-if="isSignup" class="field-row-2">
+          <div class="field-group">
+            <label for="auth-firstname">Nome</label>
+            <input
+              id="auth-firstname"
+              v-model="firstName"
+              type="text"
+              autocomplete="given-name"
+              placeholder="Mario"
+              class="text-input"
+            />
+          </div>
+          <div class="field-group">
+            <label for="auth-lastname">Cognome</label>
+            <input
+              id="auth-lastname"
+              v-model="lastName"
+              type="text"
+              autocomplete="family-name"
+              placeholder="Rossi"
+              class="text-input"
+            />
+          </div>
+        </div>
+
         <!-- Email -->
         <div class="field-group">
           <label for="auth-email">Email</label>
@@ -222,6 +255,11 @@ export default {
   position: absolute;
   top: 12px;
   right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   font-size: 26px;
@@ -229,7 +267,15 @@ export default {
   cursor: pointer;
   color: $color-text-dim;
   transition: color 0.15s ease;
+  padding: 0;
   &:hover { color: $color-text; }
+}
+
+.field-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $space-sm;
+  margin-bottom: 0;
 }
 
 .auth-logo {

@@ -2,6 +2,7 @@
 import { getImageUrl } from '../utils/images.js';
 import { getTrailerUrl, getDetails } from '../services/tmdb.js';
 import { useFavoritesStore } from '../stores/favorites.js';
+import { useAuthStore } from '../stores/auth.js';
 import TrailerModal from './TrailerModal.vue';
 import DetailModal from './DetailModal.vue';
 
@@ -17,7 +18,8 @@ export default {
   },
   setup() {
     const favorites = useFavoritesStore();
-    return { favorites };
+    const auth = useAuthStore();
+    return { favorites, auth };
   },
   data() {
     return {
@@ -101,6 +103,7 @@ export default {
             <i class="fa-solid fa-play"></i>
           </button>
           <button
+            v-if="auth.isLoggedIn"
             class="circle-btn"
             :class="{ active: isFav }"
             @click.stop="toggle"
@@ -120,6 +123,7 @@ export default {
         :loading="loadingDetail"
         :details="details"
         :is-fav="isFav"
+        :media-type="mediaType"
         @close="showDetail = false"
         @play="play"
         @toggle="toggle"
@@ -226,13 +230,15 @@ export default {
   }
 }
 
-// Desktop con hover: overlay nascosto, compare passando sopra; il poster zooma.
+// Desktop: overlay sempre visibile (titolo), bottoni appaiono solo all'hover.
 @media (hover: hover) {
-  .overlay {
+  .overlay-actions {
     opacity: 0;
+    transition: opacity 0.2s ease;
   }
+
   .movie-card:hover {
-    .overlay {
+    .overlay-actions {
       opacity: 1;
     }
     .poster {
@@ -244,7 +250,6 @@ export default {
 // Touch / mobile: overlay sempre visibile, gradiente più profondo, solo titolo.
 @media (hover: none) {
   .overlay {
-    opacity: 1;
     background: linear-gradient(
       to top,
       rgba(0, 0, 0, 0.95) 0%,

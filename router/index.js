@@ -1,15 +1,22 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Home               from '../src/components/AppMain.vue';
+import SearchPage         from '../src/components/SearchPage.vue';
 import MyList             from '../src/components/MyList.vue';
 import Series             from '../src/components/Series.vue';
 import Film               from '../src/components/Film.vue';
 import ResetPasswordPage  from '../src/components/ResetPasswordPage.vue';
+import AccountPage        from '../src/components/AccountPage.vue';
 
 const routes = [
     {
         path: '/',
         name: 'Home',
         component: Home,
+    },
+    {
+        path: '/search',
+        name: 'Search',
+        component: SearchPage,
     },
     {
         path: '/my-list',
@@ -26,6 +33,11 @@ const routes = [
         path: '/film',
         name: 'Film',
         component: Film,
+    },
+    {
+        path: '/account',
+        name: 'Account',
+        component: AccountPage,
     },
     {
         // Destinazione del link "Recupera password" inviato via email da Supabase.

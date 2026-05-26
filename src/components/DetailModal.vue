@@ -1,5 +1,6 @@
 <script>
 import { getBackdropUrl } from '../utils/images.js';
+import { getWatchProviders } from '../services/tmdb.js';
 
 export default {
   name: 'DetailModal',
@@ -8,8 +9,22 @@ export default {
     loading: { type: Boolean, default: false },
     details: { type: Object, default: null },
     isFav: { type: Boolean, default: false },
+    mediaType: { type: String, default: 'movie' },
   },
   emits: ['close', 'play', 'toggle'],
+  data() {
+    return { providers: null };
+  },
+  watch: {
+    details(val) {
+      this.providers = null;
+      if (val?.id) {
+        getWatchProviders(val.id, this.mediaType)
+          .then((p) => { this.providers = p; })
+          .catch(() => {});
+      }
+    },
+  },
   computed: {
     title() {
       return this.details?.title || this.details?.name || '';
@@ -46,7 +61,7 @@ export default {
   <div class="detail-overlay" v-if="show" @click.self="$emit('close')">
     <div class="detail-card">
       <!-- Pulsante chiudi fisso, non scrolla con il contenuto -->
-      <button class="detail-close" @click="$emit('close')" aria-label="Chiudi">&times;</button>
+      <button class="detail-close" @click="$emit('close')" aria-label="Chiudi"><i class="fa-solid fa-xmark"></i></button>
 
       <!-- Area scorrevole interna -->
       <div class="detail-scroll">
@@ -68,6 +83,28 @@ export default {
               <span v-if="year">{{ year }}</span>
               <span v-if="runtime" class="dot">•</span>
               <span v-if="runtime">{{ runtime }}</span>
+            </div>
+
+            <!-- Piattaforme streaming disponibili in Italia -->
+            <div v-if="providers?.flatrate?.length" class="detail-providers">
+              <span class="providers-label">Disponibile su</span>
+              <div class="providers-logos">
+                <a
+                  v-for="p in providers.flatrate"
+                  :key="p.provider_id"
+                  :href="providers.link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  :title="p.provider_name"
+                  class="provider-link"
+                >
+                  <img
+                    :src="`https://image.tmdb.org/t/p/w45${p.logo_path}`"
+                    :alt="p.provider_name"
+                    class="provider-logo"
+                  />
+                </a>
+              </div>
             </div>
 
             <p v-if="genres.length" class="detail-genres">{{ genres.join(' · ') }}</p>
@@ -151,9 +188,12 @@ export default {
   border: none;
   background-color: rgba(0, 0, 0, 0.6);
   color: $color-text;
-  font-size: 24px;
-  line-height: 1;
+  font-size: 1.1rem;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 
   &:hover {
     background-color: #000;
@@ -226,6 +266,45 @@ export default {
   .dot {
     color: $color-text-dim;
   }
+}
+
+.detail-providers {
+  display: flex;
+  align-items: center;
+  gap: $space-sm;
+  flex-wrap: wrap;
+  margin-bottom: $space-sm;
+}
+
+.providers-label {
+  font-size: 0.82rem;
+  color: $color-text-dim;
+  white-space: nowrap;
+}
+
+.providers-logos {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.provider-link {
+  display: inline-block;
+  border-radius: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.provider-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
 }
 
 .detail-genres {

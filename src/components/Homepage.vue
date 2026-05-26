@@ -3,7 +3,9 @@ import { Swiper, SwiperSlide } from 'vue-awesome-swiper';
 import 'swiper/swiper-bundle.css';
 import { getNowPlaying, getTopRated, getPopularMovies, getDiscoverByGenre, getTrailerUrl } from '../services/tmdb.js';
 import { getImageUrl as buildImageUrl } from '../utils/images.js';
+import { hasRequiredData } from '../utils/media.js';
 import { GENRES } from '../constants/genres.js';
+import { useAuthStore } from '../stores/auth.js';
 import { useSearchStore } from '../stores/search.js';
 import { useFavoritesStore } from '../stores/favorites.js';
 import MovieCard from './MovieCard.vue';
@@ -19,9 +21,10 @@ export default {
     PageLoader,
   },
   setup() {
+    const auth = useAuthStore();
     const search = useSearchStore();
     const favorites = useFavoritesStore();
-    return { search, favorites };
+    return { auth, search, favorites };
   },
   data() {
     return {
@@ -67,15 +70,16 @@ export default {
             getDiscoverByGenre(GENRES.comedy),
             getDiscoverByGenre(GENRES.documentary),
           ]);
-        this.movies = nowPlaying;
-        this.topRatedMovies = topRated;
-        this.popularMovies = popular.results;
-        this.horrorMovies = horror;
-        this.romanticMovies = romance;
-        this.actionMovies = action;
-        this.sciFiMovies = sciFi;
-        this.comedyMovies = comedy;
-        this.documentaryMovies = documentary;
+        const clean = (arr) => (arr || []).filter(hasRequiredData);
+        this.movies = clean(nowPlaying);
+        this.topRatedMovies = clean(topRated);
+        this.popularMovies = clean(popular.results);
+        this.horrorMovies = clean(horror);
+        this.romanticMovies = clean(romance);
+        this.actionMovies = clean(action);
+        this.sciFiMovies = clean(sciFi);
+        this.comedyMovies = clean(comedy);
+        this.documentaryMovies = clean(documentary);
         this.jumbo_data = this.movies[Math.floor(Math.random() * this.movies.length)] || {};
       } catch (error) {
         console.error('Errore nel recupero dei film:', error);
@@ -133,7 +137,7 @@ export default {
           <button class="btn-hero btn-play" @click="playJumboMovieTrailer">
             <i class="fa-solid fa-play"></i> Riproduci
           </button>
-          <button class="btn-hero btn-secondary" @click="toggleJumboMovieInList">
+          <button v-if="auth.isLoggedIn" class="btn-hero btn-secondary" @click="toggleJumboMovieInList">
             <i :class="isJumboMovieInList() ? 'fa-solid fa-check' : 'fa-solid fa-plus'"></i>
             {{ isJumboMovieInList() ? 'Nella lista' : 'La mia lista' }}
           </button>

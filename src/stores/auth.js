@@ -16,6 +16,13 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isLoggedIn:  (state) => !!state.user,
     email:       (state) => state.user?.email ?? '',
+    firstName:   (state) => state.user?.user_metadata?.first_name ?? '',
+    lastName:    (state) => state.user?.user_metadata?.last_name ?? '',
+    fullName:    (state) => {
+      const f = state.user?.user_metadata?.first_name ?? '';
+      const l = state.user?.user_metadata?.last_name  ?? '';
+      return (f + ' ' + l).trim();
+    },
     avatarKey:   (state) => `${AVATAR_PREFIX}${state.user?.id || 'guest'}`,
   },
   actions: {
@@ -61,8 +68,12 @@ export const useAuthStore = defineStore('auth', {
       this.ready = true;
     },
 
-    async signUp(email, password) {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+    async signUp(email, password, { firstName, lastName } = {}) {
+      const meta = {};
+      if (firstName) meta.first_name = firstName;
+      if (lastName)  meta.last_name  = lastName;
+      const opts = Object.keys(meta).length ? { data: meta } : {};
+      const { data, error } = await supabase.auth.signUp({ email, password, options: opts });
       if (error) throw error;
       return data;
     },
@@ -107,6 +118,38 @@ export const useAuthStore = defineStore('auth', {
       if (!isSupabaseConfigured) throw new Error('Autenticazione non configurata.');
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
+    },
+
+    /**
+     * Verifica che la password attuale sia corretta eseguendo un login silenzioso.
+     * Ritorna true se corretta, false se sbagliata, lancia errore per problemi di rete.
+     */
+    async verifyPassword(password) {
+      if (!isSupabaseConfigured) throw new Error('Autenticazione non configurata.');
+      const { error } = await supabase.auth.signInWithPassword({
+        email: this.email,
+        password,
+      });
+      return !error;
+    },
+
+    /**
+     * Aggiorna nome, cognome, email e/o password del profilo utente.
+     * Passa solo i campi che sono stati modificati.
+     */
+    async updateProfile({ firstName, lastName, email, newPassword } = {}) {
+      if (!isSupabaseConfigured) throw new Error('Autenticazione non configurata.');
+      const payload = {};
+      if (email && email !== this.email) payload.email = email;
+      if (newPassword) payload.password = newPassword;
+      const meta = {};
+      if (firstName !== undefined) meta.first_name = firstName;
+      if (lastName  !== undefined) meta.last_name  = lastName;
+      if (Object.keys(meta).length) payload.data = meta;
+      if (!Object.keys(payload).length) return; // nulla da aggiornare
+      const { data, error } = await supabase.auth.updateUser(payload);
+      if (error) throw error;
+      if (data?.user) this.user = data.user;
     },
 
     /** Invio email di reset password. */

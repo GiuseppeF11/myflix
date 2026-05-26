@@ -62,4 +62,28 @@ export async function getTrailerUrl(id, mediaType = 'movie') {
   return trailer ? `https://www.youtube.com/embed/${trailer.key}` : null;
 }
 
+/** Piattaforme streaming disponibili per l'Italia (flatrate = abbonamento). */
+export async function getWatchProviders(id, mediaType = 'movie') {
+  const { data } = await tmdb.get(`/${mediaType}/${id}/watch/providers`);
+  return data.results?.IT ?? null;
+}
+
+/** Lista generi TMDB per tipo (movie | tv). */
+export async function getGenres(mediaType = 'movie') {
+  const { data } = await tmdb.get(`/genre/${mediaType}/list`);
+  return data.genres || [];
+}
+
+/** Discover film con filtri avanzati (genere, ordinamento, ecc.). */
+export async function discoverMovies(params = {}) {
+  const { data } = await tmdb.get('/discover/movie', { params });
+  return data;
+}
+
+/** Discover serie TV con filtri avanzati. */
+export async function discoverTv(params = {}) {
+  const { data } = await tmdb.get('/discover/tv', { params });
+  return data;
+}
+
 export default tmdb;
