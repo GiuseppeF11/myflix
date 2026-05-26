@@ -72,4 +72,20 @@ export default {
 .close-button:hover {
   background-color: #000;
 }
+
+/* ── Mobile: modal a schermo intero ───────────────────────────────────────── */
+@media (max-width: 767px) {
+  .modal-overlay {
+    padding: 0;
+    background-color: #000;
+    align-items: stretch;
+  }
+
+  .modal-content {
+    max-width: 100%;
+    height: 100%;
+    aspect-ratio: unset;
+    border-radius: 0;
+  }
+}
 </style>

@@ -1,5 +1,5 @@
 <script>
-import { nextTick } from 'vue';
+import { nextTick, watch } from 'vue';
 import { useSearchStore } from '../stores/search.js';
 import MovieCard from './MovieCard.vue';
 import SearchFilters from './SearchFilters.vue';
@@ -10,6 +10,14 @@ export default {
   setup() {
     const search = useSearchStore();
     search.fetchGenres();
+
+    // Watcher Composition API: scatta DOPO che search.text è aggiornato
+    // nel store, garantendo il valore corretto su tutti i browser/mobile.
+    watch(
+      () => search.text,
+      () => { search.run(); }
+    );
+
     return { search };
   },
   computed: {
@@ -63,7 +71,6 @@ export default {
           class="msf-input"
           placeholder="Cerca film o serie…"
           v-model="search.text"
-          @input="search.run()"
           aria-label="Cerca"
         />
         <button

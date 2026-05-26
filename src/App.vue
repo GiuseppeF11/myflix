@@ -49,7 +49,8 @@ export default {
                 // Su mobile l'utente resta su /search (empty state visibile)
                 this.$router.push('/');
             }
-            this.search.run();
+            // search.run() è delegato al watch() in SearchPage (Composition API):
+            // scatta dopo che search.text è stato aggiornato nel store.
         },
         '$route'(to) {
             // Tornando in Home si azzera la ricerca (testo + filtri)
