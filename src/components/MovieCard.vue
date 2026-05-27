@@ -45,6 +45,14 @@ export default {
     isFav() {
       return this.favorites.isFavorite(this.id, this.mediaType);
     },
+    releaseYear() {
+      const date = this.item.release_date || this.item.first_air_date;
+      return date ? new Date(date).getFullYear() : null;
+    },
+    rating() {
+      const v = this.item.vote_average;
+      return v != null && v > 0 ? Number(v).toFixed(1) : null;
+    },
   },
   methods: {
     getImageUrl,
@@ -130,6 +138,12 @@ export default {
           </button>
         </div>
         <h4 class="overlay-title">{{ title }}</h4>
+        <div v-if="releaseYear || rating" class="overlay-meta">
+          <span v-if="rating" class="meta-rating">
+            <i class="fa-solid fa-star"></i>{{ rating }}
+          </span>
+          <span v-if="releaseYear" class="meta-year">{{ releaseYear }}</span>
+        </div>
       </div>
     </div>
 
@@ -217,6 +231,29 @@ export default {
   overflow: hidden;
 }
 
+.overlay-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.meta-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #f5c518;
+
+  i { font-size: 0.55rem; }
+}
+
+.meta-year {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
 .circle-btn {
   width: 28px;
   height: 28px;
@@ -248,7 +285,8 @@ export default {
 }
 
 // Desktop: overlay sempre visibile (titolo), bottoni appaiono solo all'hover.
-@media (hover: hover) {
+// (pointer: fine) esclude i dispositivi touch che Chrome Android segnala erroneamente come hover:hover
+@media (hover: hover) and (pointer: fine) {
   .overlay-actions {
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -273,7 +311,8 @@ export default {
 }
 
 // Touch / mobile: overlay sempre visibile, gradiente più profondo, solo titolo.
-@media (hover: none) {
+// (pointer: coarse) cattura i touch screen che Chrome Android segnala come hover:hover
+@media (hover: none), (pointer: coarse) {
   .overlay {
     background: linear-gradient(
       to top,
@@ -290,6 +329,11 @@ export default {
 
   .overlay-title {
     font-size: 0.68rem;
+  }
+
+  .meta-rating,
+  .meta-year {
+    font-size: 0.6rem;
   }
 }
 

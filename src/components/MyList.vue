@@ -102,9 +102,10 @@ export default {
     this._longPressTimer = null;
   },
   beforeUnmount() {
-    document.removeEventListener('click',       this.onOutsideClick);
-    document.removeEventListener('pointermove', this._onDragMove);
-    document.removeEventListener('pointerup',   this._onDragUp);
+    document.removeEventListener('click',        this.onOutsideClick);
+    document.removeEventListener('pointermove',   this._onDragMove);
+    document.removeEventListener('pointerup',     this._onDragUp);
+    document.removeEventListener('pointercancel', this._onDragUp);
     clearTimeout(this._longPressTimer);
     this._cleanupGhost();
   },
@@ -214,8 +215,9 @@ export default {
         }, 500);
       }
 
-      document.addEventListener('pointermove', this._onDragMove, { passive: false });
-      document.addEventListener('pointerup',   this._onDragUp);
+      document.addEventListener('pointermove',   this._onDragMove, { passive: false });
+      document.addEventListener('pointerup',    this._onDragUp);
+      document.addEventListener('pointercancel', this._onDragUp); // cleanup se il browser interrompe il touch
     },
 
     _touchDragMove(e) {
@@ -256,8 +258,9 @@ export default {
       clearTimeout(this._longPressTimer);
       this._longPressTimer = null;
 
-      document.removeEventListener('pointermove', this._onDragMove);
-      document.removeEventListener('pointerup',   this._onDragUp);
+      document.removeEventListener('pointermove',   this._onDragMove);
+      document.removeEventListener('pointerup',    this._onDragUp);
+      document.removeEventListener('pointercancel', this._onDragUp);
 
       const d = this._drag;
       if (d.active && this.touchDragOverAlbumId != null) {
@@ -275,6 +278,12 @@ export default {
     },
 
     _createGhost(e, item) {
+      // Rimuovi sempre qualsiasi ghost residuo prima di crearne uno nuovo
+      if (this._drag?.ghostEl) {
+        this._drag.ghostEl.remove();
+        this._drag.ghostEl = null;
+      }
+
       const count = this.isSelected(item) && this.selectedItems.length > 0
         ? this.selectedItems.length : 1;
       const el = document.createElement('div');
@@ -477,11 +486,12 @@ export default {
                 class="fab-dropdown-item"
                 @click="moveToAlbum(album.id)"
               >
-                <i class="fa-solid fa-folder"></i> {{ album.name }}
+                <i class="fa-solid fa-folder"></i>
+                <span class="fab-dropdown-text">{{ album.name }}</span>
               </button>
               <div v-if="albums.albums.length > 0" class="fab-dropdown-divider"></div>
               <button class="fab-dropdown-item fab-dropdown-new" @click="openCreateAlbumAndMove">
-                Nuova cartella…
+                + Nuova cartella
               </button>
             </div>
           </div>
@@ -742,8 +752,14 @@ export default {
 }
 
 .fab-dropdown {
-  position: absolute; bottom: calc(100% + 10px); left: 0; z-index: 600;
-  min-width: 200px;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  z-index: 600;
+  // Larghezza: almeno 160px, al massimo la larghezza dell'intera fab-bar
+  min-width: 160px;
+  max-width: min(220px, calc(100vw - 48px));
+
   background-color: rgba(20,20,20,0.98);
   border: 1px solid rgba(255,255,255,0.15);
   border-radius: $radius-md;
@@ -753,16 +769,41 @@ export default {
 
 .fab-dropdown-item {
   display: flex; align-items: center; gap: $space-sm;
-  width: 100%; padding: 10px 16px; background: none; border: none;
-  color: $color-text-muted; font-size: 0.88rem; text-align: left; cursor: pointer;
+  width: 100%; padding: 10px 14px; background: none; border: none;
+  color: $color-text-muted; font-size: 0.85rem; text-align: left; cursor: pointer;
   transition: background-color 0.12s, color 0.12s;
+  min-width: 0; // necessario per il truncation dei figli flex
 
-  i { color: $color-accent; }
+  i { color: $color-accent; flex-shrink: 0; }
   &:hover { background-color: rgba(255,255,255,0.07); color: $color-text; }
+}
+
+// Testo dell'album nel dropdown — troncato se troppo lungo
+.fab-dropdown-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fab-dropdown-divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 2px 0; }
 .fab-dropdown-new     { color: $color-text; font-weight: 600; }
+
+// Su mobile il dropdown non ha un wrapper posizionato:
+// usa direttamente .fab-bar (position:fixed) come containing block
+// → left:0 / right:0 lo allineano perfettamente alla bar, niente sforamenti
+@media (max-width: 480px) {
+  .fab-move-wrapper {
+    position: static;
+  }
+  .fab-dropdown {
+    left: 0;
+    right: 0;
+    min-width: 0;
+    max-width: none;
+  }
+}
 
 .fab-enter-active, .fab-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
 .fab-enter-from, .fab-leave-to       { opacity: 0; transform: translateX(-50%) translateY(12px); }

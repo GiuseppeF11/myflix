@@ -52,6 +52,10 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+    scrollBehavior() {
+        // Torna sempre in cima ad ogni navigazione
+        return { top: 0, left: 0, behavior: 'instant' };
+    },
 });
 
 // /my-list è sempre raggiungibile; se l'utente non è loggato,

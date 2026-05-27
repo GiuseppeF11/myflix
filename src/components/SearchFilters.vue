@@ -301,7 +301,8 @@ export default {
 }
 
 .provider-panel {
-  min-width: 240px;
+  min-width: 180px;
+  max-width: 200px;
 }
 
 .panel-header {
@@ -332,14 +333,18 @@ export default {
 }
 
 .panel-list {
-  padding: 6px 8px;
+  padding: 6px 6px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
 
-.genre-list,
+.genre-list {
+  overflow-y: auto;
+}
+
 .provider-list {
   overflow-y: auto;
+  max-height: 260px;
 }
 
 .panel-item {
@@ -394,6 +399,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.82rem;
 }
 
 // ── Indicatore checkbox/radio ──────────────────────────────────────────────
