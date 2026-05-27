@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { supabase, isSupabaseConfigured } from '../services/supabase.js';
-import { useAuthStore } from './auth.js';
+import { useAuthStore }   from './auth.js';
+import { useAlbumsStore } from './albums.js';
 
 const STORAGE_KEY = 'myflix:favorites';
 
@@ -83,6 +84,8 @@ export const useFavoritesStore = defineStore('favorites', {
           .delete()
           .match({ user_id: useAuthStore().user.id, tmdb_id: tmdbId, media_type: mediaType });
         if (error) console.error('Errore rimozione preferito:', error);
+        // Rimuovi il titolo anche da tutti gli album (fire-and-forget)
+        useAlbumsStore().removeItemFromAllAlbums(tmdbId, mediaType);
       } else {
         this.persistLocal();
       }

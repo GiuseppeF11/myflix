@@ -1,10 +1,12 @@
 <script>
 import { getBackdropUrl } from '../utils/images.js';
-import { getWatchProviders } from '../services/tmdb.js';
+import { getWatchProviders, getReleaseDates } from '../services/tmdb.js';
 import { useAuthStore } from '../stores/auth.js';
+import PageLoader from './PageLoader.vue';
 
 export default {
   name: 'DetailModal',
+  components: { PageLoader },
   setup() {
     const auth = useAuthStore();
     return { auth };
@@ -18,15 +20,21 @@ export default {
   },
   emits: ['close', 'play', 'toggle'],
   data() {
-    return { providers: null };
+    return { providers: null, releaseDates: [] };
   },
   watch: {
     details(val) {
       this.providers = null;
+      this.releaseDates = [];
       if (val?.id) {
         getWatchProviders(val.id, this.mediaType)
           .then((p) => { this.providers = p; })
           .catch(() => {});
+        if (this.mediaType === 'movie') {
+          getReleaseDates(val.id)
+            .then((dates) => { this.releaseDates = dates; })
+            .catch(() => {});
+        }
       }
     },
   },
@@ -55,6 +63,16 @@ export default {
     genres() {
       return (this.details?.genres || []).map((g) => g.name);
     },
+    isInCinema() {
+      if (!this.releaseDates.length) return false;
+      const now = Date.now();
+      const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000;
+      return this.releaseDates.some((r) => {
+        if (r.type !== 3) return false; // 3 = Theatrical
+        const releaseTime = new Date(r.release_date).getTime();
+        return releaseTime <= now && now - releaseTime <= ninetyDaysMs;
+      });
+    },
     backdrop() {
       return getBackdropUrl(this.details?.backdrop_path || this.details?.poster_path);
     },
@@ -70,9 +88,9 @@ export default {
 
       <!-- Area scorrevole interna -->
       <div class="detail-scroll">
-        <div v-if="loading" class="detail-loading">Caricamento…</div>
+        <PageLoader :visible="loading" />
 
-        <template v-else-if="details">
+        <template v-if="details && !loading">
           <div class="detail-hero">
             <img :src="backdrop" :alt="title" />
             <h2 class="detail-title">{{ title }}</h2>
@@ -90,10 +108,15 @@ export default {
               <span v-if="runtime">{{ runtime }}</span>
             </div>
 
-            <!-- Piattaforme streaming disponibili in Italia -->
-            <div v-if="providers?.flatrate?.length" class="detail-providers">
+            <!-- Cinema + piattaforme streaming disponibili in Italia -->
+            <div v-if="isInCinema || providers?.flatrate?.length" class="detail-providers">
               <span class="providers-label">Disponibile su</span>
               <div class="providers-logos">
+                <span v-if="isInCinema" class="cinema-badge">
+                  <i class="fa-solid fa-film"></i> Al Cinema
+                </span>
+              </div>
+              <div v-if="providers?.flatrate?.length" class="providers-logos">
                 <a
                   v-for="p in providers.flatrate"
                   :key="p.provider_id"
@@ -205,13 +228,6 @@ export default {
   }
 }
 
-.detail-loading {
-  padding: 60px;
-  text-align: center;
-  font-style: italic;
-  color: $color-text-dim;
-}
-
 .detail-hero {
   position: relative;
 
@@ -285,6 +301,22 @@ export default {
   font-size: 0.82rem;
   color: $color-text-dim;
   white-space: nowrap;
+}
+
+.cinema-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background-color: rgba(219, 25, 39, 0.15);
+  border: 1px solid rgba(219, 25, 39, 0.4);
+  color: #ff6b78;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+
+  i { font-size: 0.75rem; }
 }
 
 .providers-logos {

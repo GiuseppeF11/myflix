@@ -86,4 +86,26 @@ export async function discoverTv(params = {}) {
   return data;
 }
 
+/**
+ * Date di uscita per un film per regione (include tipo 3 = Theatrical).
+ * Usato per determinare se un film è attualmente in sala.
+ */
+export async function getReleaseDates(id) {
+  const { data } = await tmdb.get(`/movie/${id}/release_dates`);
+  // Priorità IT; fallback al primo disponibile
+  const it = data.results?.find((r) => r.iso_3166_1 === 'IT') ?? data.results?.[0];
+  return it?.release_dates || [];
+}
+
+/**
+ * Lista provider streaming disponibili in Italia per tipo (movie | tv).
+ * Ordinata per display_priority (più rilevanti prima).
+ */
+export async function getWatchProvidersList(mediaType = 'movie') {
+  const { data } = await tmdb.get(`/watch/providers/${mediaType}`, {
+    params: { watch_region: 'IT' },
+  });
+  return (data.results || []).sort((a, b) => a.display_priority - b.display_priority);
+}
+
 export default tmdb;

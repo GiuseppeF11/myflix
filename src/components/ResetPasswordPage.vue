@@ -3,10 +3,11 @@ import { useAuthStore } from '../stores/auth.js';
 import { isPasswordValid } from '../utils/password.js';
 import PasswordInput from './PasswordInput.vue';
 import PasswordStrength from './PasswordStrength.vue';
+import PageLoader from './PageLoader.vue';
 
 export default {
   name: 'ResetPasswordPage',
-  components: { PasswordInput, PasswordStrength },
+  components: { PasswordInput, PasswordStrength, PageLoader },
   setup() {
     const auth = useAuthStore();
     return { auth };
@@ -71,13 +72,13 @@ export default {
       </router-link>
 
       <!-- ── Caricamento in corso ── -->
-      <div v-if="!auth.ready" class="rp-state">
-        <span class="rp-spinner"></span>
-        <p>Verifica in corso…</p>
-      </div>
+      <PageLoader :visible="!auth.ready" />
+
+      <!-- Contenuto visibile solo quando auth è pronto -->
+      <template v-if="auth.ready">
 
       <!-- ── Completato con successo ── -->
-      <div v-else-if="done" class="rp-state rp-success">
+      <div v-if="done" class="rp-state rp-success">
         <i class="fa-solid fa-circle-check rp-state-icon"></i>
         <h2>Password aggiornata!</h2>
         <p>Stai per essere reindirizzato alla home…</p>
@@ -144,12 +145,14 @@ export default {
             :class="{ ready: canSubmit }"
             :disabled="!canSubmit"
           >
-            <span v-if="loading" class="rp-spinner rp-spinner--inline"></span>
+            <span v-if="loading" class="rp-spinner"></span>
             <i v-else class="fa-solid fa-shield-halved"></i>
             {{ loading ? 'Salvataggio…' : 'Salva nuova password' }}
           </button>
         </form>
-      </template>
+      </template><!-- fine form reset -->
+
+      </template><!-- fine v-if="auth.ready" -->
 
     </div>
   </div>
@@ -337,24 +340,15 @@ export default {
   &:hover { opacity: 0.88; }
 }
 
-// ── Spinner ──
+// ── Spinner inline (usato nel bottone submit) ──
 .rp-spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid rgba(255, 255, 255, 0.15);
-  border-top-color: $color-accent;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: $color-text;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-  display: block;
-  margin: 0 auto $space-md;
-
-  &--inline {
-    width: 16px;
-    height: 16px;
-    border-width: 2px;
-    border-top-color: $color-text;
-    margin: 0;
-  }
+  display: inline-block;
 }
 
 @keyframes spin {

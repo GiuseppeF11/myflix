@@ -15,7 +15,11 @@ export default {
     mediaType: { type: String, required: true }, // 'movie' | 'tv'
     // Mostra un badge colorato con il tipo (usato nei risultati di ricerca)
     showTypeBadge: { type: Boolean, default: false },
+    // Modalità selezione (es. in MyList): click → toggle, draggable abilitato
+    selectable: { type: Boolean, default: false },
+    selected:   { type: Boolean, default: false },
   },
+  emits: ['toggle-select'],
   setup() {
     const favorites = useFavoritesStore();
     const auth = useAuthStore();
@@ -44,6 +48,13 @@ export default {
   },
   methods: {
     getImageUrl,
+    onCardClick() {
+      if (this.selectable) {
+        this.$emit('toggle-select', { tmdb_id: this.id, media_type: this.mediaType });
+      } else {
+        this.openDetail();
+      }
+    },
     toggle() {
       this.favorites.toggle(
         { id: this.id, title: this.title, poster_path: this.item.poster_path, overview: this.item.overview },
@@ -79,15 +90,15 @@ export default {
 </script>
 
 <template>
-  <div class="movie-card">
+  <div class="movie-card" :class="{ 'movie-card--selectable': selectable, 'movie-card--selected': selectable && selected }">
     <div
       class="poster-wrap"
       role="button"
       tabindex="0"
-      :aria-label="'Dettagli di ' + title"
-      @click="openDetail"
-      @keydown.enter="openDetail"
-      @keydown.space.prevent="openDetail"
+      :aria-label="selectable ? (selected ? 'Deseleziona ' : 'Seleziona ') + title : 'Dettagli di ' + title"
+      @click="onCardClick"
+      @keydown.enter="onCardClick"
+      @keydown.space.prevent="onCardClick"
     >
       <img class="poster" :src="getImageUrl(item.poster_path, 'w500')" :alt="title" loading="lazy" />
 
@@ -97,8 +108,13 @@ export default {
         {{ mediaType === 'movie' ? 'Film' : 'Serie' }}
       </span>
 
+      <!-- Indicatore selezione -->
+      <div v-if="selectable" class="select-overlay">
+        <i :class="selected ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+      </div>
+
       <div class="overlay">
-        <div class="overlay-actions">
+        <div v-if="!selectable" class="overlay-actions">
           <button class="circle-btn play" @click.stop="play" :aria-label="'Guarda il trailer di ' + title">
             <i class="fa-solid fa-play"></i>
           </button>
@@ -145,7 +161,8 @@ export default {
   background-color: $color-surface;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 
-  &:hover {
+  // Hover effects solo in modalità normale (non selezionabile)
+  &:not(.movie-card--selectable):hover {
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
   }
 }
@@ -237,12 +254,20 @@ export default {
     transition: opacity 0.2s ease;
   }
 
-  .movie-card:hover {
-    .overlay-actions {
-      opacity: 1;
-    }
-    .poster {
-      transform: scale(1.06);
+  // Hover effects SOLO in modalità normale
+  .movie-card:not(.movie-card--selectable):hover {
+    .overlay-actions { opacity: 1; }
+    .poster          { transform: scale(1.06); }
+  }
+
+  // Hover in modalità selezionabile: outline sottile + cursore
+  .movie-card--selectable {
+    cursor: grab;
+    &:active { cursor: grabbing; }
+
+    &:not(.movie-card--selected):hover .poster-wrap {
+      outline: 2px solid rgba(255, 255, 255, 0.3);
+      outline-offset: -2px;
     }
   }
 }
@@ -266,6 +291,27 @@ export default {
   .overlay-title {
     font-size: 0.68rem;
   }
+}
+
+// ── Modalità selezione ────────────────────────────────────────────────────
+.movie-card--selected .poster-wrap {
+  outline: 2.5px solid $color-accent;
+  outline-offset: -2.5px;
+}
+
+.select-overlay {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  transition: color 0.15s;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+
+  .movie-card--selected & { color: $color-accent; }
 }
 
 // ---- Badge tipo (Film / Serie TV) ----

@@ -1,21 +1,26 @@
 <script>
 /**
- * Barra filtri riutilizzabile: generi (multi-select) + ordinamento (campo + direzione).
- * Può essere usata in AppMain (ricerca), Film.vue, Series.vue e MyList.vue.
+ * Barra filtri riutilizzabile: generi (multi-select) + ordinamento + piattaforma.
+ * Può essere usata in SearchPage, Film.vue, Series.vue e MyList.vue.
  */
 export default {
   name: 'SearchFilters',
   props: {
-    genresList: { type: Array, default: () => [] },
-    genres:     { type: Array, default: () => [] },
-    sortBy:     { type: String, default: 'popularity' },
-    sortOrder:  { type: String, default: 'desc' },
+    genresList:    { type: Array, default: () => [] },
+    genres:        { type: Array, default: () => [] },
+    sortBy:        { type: String, default: 'popularity' },
+    sortOrder:     { type: String, default: 'desc' },
+    providersList: { type: Array, default: () => [] },  // [{ provider_id, provider_name, logo_path }]
+    providers:     { type: Array, default: () => [] },  // ID selezionati (può includere 'cinema')
+    showGenres:    { type: Boolean, default: true },
+    showSort:      { type: Boolean, default: true },
   },
-  emits: ['update:genres', 'update:sortBy', 'update:sortOrder'],
+  emits: ['update:genres', 'update:sortBy', 'update:sortOrder', 'update:providers'],
   data() {
     return {
-      genreOpen: false,
-      sortOpen:  false,
+      genreOpen:    false,
+      sortOpen:     false,
+      providerOpen: false,
     };
   },
   mounted() {
@@ -31,6 +36,9 @@ export default {
       }
       if (this.sortOpen && this.$refs.sortDropdown && !this.$refs.sortDropdown.contains(e.target)) {
         this.sortOpen = false;
+      }
+      if (this.providerOpen && this.$refs.providerDropdown && !this.$refs.providerDropdown.contains(e.target)) {
+        this.providerOpen = false;
       }
     },
     toggleGenre(id) {
@@ -49,6 +57,15 @@ export default {
     toggleOrder() {
       this.$emit('update:sortOrder', this.sortOrder === 'desc' ? 'asc' : 'desc');
     },
+    toggleProvider(id) {
+      const updated = this.providers.includes(id)
+        ? this.providers.filter((p) => p !== id)
+        : [...this.providers, id];
+      this.$emit('update:providers', updated);
+    },
+    clearProviders() {
+      this.$emit('update:providers', []);
+    },
   },
   computed: {
     currentSortLabel() {
@@ -62,6 +79,10 @@ export default {
         { value: 'vote_average', label: 'Valutazione' },
       ];
     },
+    // Mostra il dropdown solo se c'è almeno un provider disponibile
+    hasProviders() {
+      return this.providersList.length > 0;
+    },
   },
 };
 </script>
@@ -70,7 +91,7 @@ export default {
   <div class="search-filters">
 
     <!-- ── Categorie (multi-select) ── -->
-    <div class="filter-group" ref="genreDropdown">
+    <div v-if="showGenres" class="filter-group" ref="genreDropdown">
       <button
         class="filter-btn"
         :class="{ 'filter-btn--active': genres.length > 0 }"
@@ -111,8 +132,60 @@ export default {
       </div>
     </div>
 
+    <!-- ── Piattaforma (multi-select) ── -->
+    <div v-if="hasProviders" class="filter-group" ref="providerDropdown">
+      <button
+        class="filter-btn"
+        :class="{ 'filter-btn--active': providers.length > 0 }"
+        @click="providerOpen = !providerOpen"
+        aria-haspopup="listbox"
+      >
+        <i class="fa-solid fa-tv"></i>
+        <span v-if="providers.length === 0">Piattaforma</span>
+        <span v-else class="active-label">{{ providers.length }} piattaform{{ providers.length === 1 ? 'a' : 'e' }}</span>
+        <i class="fa-solid" :class="providerOpen ? 'fa-chevron-up' : 'fa-chevron-down'" style="font-size:0.65rem"></i>
+      </button>
+
+      <div v-if="providerOpen" class="dropdown-panel provider-panel" role="listbox" aria-multiselectable="true">
+        <div class="panel-header">
+          <span class="panel-title">Filtra per piattaforma</span>
+          <button v-if="providers.length > 0" class="clear-btn" @click.stop="clearProviders">Rimuovi tutti</button>
+        </div>
+        <div class="panel-list provider-list">
+          <label
+            v-for="p in providersList"
+            :key="p.provider_id"
+            class="panel-item"
+            :class="{ 'panel-item--selected': providers.includes(p.provider_id) }"
+          >
+            <input
+              type="checkbox"
+              :value="p.provider_id"
+              :checked="providers.includes(p.provider_id)"
+              @change="toggleProvider(p.provider_id)"
+              class="visually-hidden"
+            />
+            <!-- Cinema: icona FA invece del logo -->
+            <span v-if="p.provider_id === 'cinema'" class="provider-icon-cinema">
+              <i class="fa-solid fa-film"></i>
+            </span>
+            <img
+              v-else
+              :src="`https://image.tmdb.org/t/p/w45${p.logo_path}`"
+              :alt="p.provider_name"
+              class="provider-logo-sm"
+            />
+            <span class="provider-name">{{ p.provider_name }}</span>
+            <span class="item-check">
+              <i v-if="providers.includes(p.provider_id)" class="fa-solid fa-check"></i>
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Ordina per (dropdown custom) ── -->
-    <div class="filter-group" ref="sortDropdown">
+    <div v-if="showSort" class="filter-group" ref="sortDropdown">
       <button
         class="filter-btn"
         :class="{ 'filter-btn--active': sortBy !== 'popularity' }"
@@ -146,7 +219,7 @@ export default {
     </div>
 
     <!-- ── Direzione asc / desc ── -->
-    <button
+    <button v-if="showSort"
       class="order-btn"
       :class="{ 'order-btn--active': sortOrder !== 'desc' }"
       :title="sortOrder === 'desc' ? 'Ordine decrescente' : 'Ordine crescente'"
@@ -202,7 +275,6 @@ export default {
 
     .active-label { color: #000; }
 
-    // Impedisce all'hover di riportare il testo a bianco su sfondo bianco
     &:hover {
       color: #000;
       border-color: $color-text;
@@ -226,6 +298,10 @@ export default {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(10px);
   overflow: hidden;
+}
+
+.provider-panel {
+  min-width: 240px;
 }
 
 .panel-header {
@@ -261,7 +337,8 @@ export default {
   scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
 
-.genre-list {
+.genre-list,
+.provider-list {
   overflow-y: auto;
 }
 
@@ -286,6 +363,37 @@ export default {
     color: $color-text;
     font-weight: 600;
   }
+}
+
+// ── Logo provider (piccolo, nella lista) ───────────────────────────────────
+.provider-logo-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.provider-icon-cinema {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background-color: rgba(219, 25, 39, 0.2);
+  color: #ff6b78;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+// ── Nome provider (prende lo spazio residuo, check rimane a destra) ────────
+.provider-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 // ── Indicatore checkbox/radio ──────────────────────────────────────────────

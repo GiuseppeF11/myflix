@@ -3,16 +3,16 @@ import { nextTick, watch } from 'vue';
 import { useSearchStore } from '../stores/search.js';
 import MovieCard from './MovieCard.vue';
 import SearchFilters from './SearchFilters.vue';
+import LoadingSkeleton from './LoadingSkeleton.vue';
 
 export default {
   name: 'SearchPage',
-  components: { MovieCard, SearchFilters },
+  components: { MovieCard, SearchFilters, LoadingSkeleton },
   setup() {
     const search = useSearchStore();
     search.fetchGenres();
+    search.fetchProviders();
 
-    // Watcher Composition API: scatta DOPO che search.text è aggiornato
-    // nel store, garantendo il valore corretto su tutti i browser/mobile.
     watch(
       () => search.text,
       () => { search.run(); }
@@ -22,7 +22,7 @@ export default {
   },
   computed: {
     hasQuery() {
-      return this.search.text.trim().length > 0 || this.search.genres.length > 0;
+      return this.search.text.trim().length > 0 || this.search.genres.length > 0 || this.search.providers.length > 0;
     },
     filterChips() {
       return [
@@ -98,13 +98,12 @@ export default {
       <!-- Header: label risultati + filtri -->
       <div class="search-header">
         <p class="search-query">
-          <template v-if="search.loading">Ricerca in corso…</template>
-          <template v-else-if="search.hasResults">
+          <template v-if="search.hasResults && !search.loading">
             <span class="query-label">Risultati per</span>
             <strong v-if="search.text.trim()">"{{ search.text }}"</strong>
             <strong v-else>categorie selezionate</strong>
           </template>
-          <template v-else>
+          <template v-else-if="!search.loading && !search.hasResults">
             <span v-if="search.text.trim()">
               Nessun risultato per <strong>"{{ search.text }}"</strong>
             </span>
@@ -135,13 +134,20 @@ export default {
             :genres="search.genres"
             :sort-by="search.sortBy"
             :sort-order="search.sortOrder"
+            :providers-list="search.providersList"
+            :providers="search.providers"
             @update:genres="(v) => { search.setGenres(v); search.run(); }"
             @update:sort-by="(v) => { search.setSortBy(v); search.run(); }"
             @update:sort-order="(v) => { search.setSortOrder(v); search.run(); }"
+            @update:providers="(v) => { search.setProviders(v); search.run(); }"
           />
         </div>
       </div>
 
+      <!-- Skeleton mentre cerca -->
+      <LoadingSkeleton v-if="search.loading" :count="14" />
+
+      <template v-else>
       <!-- Avviso filtro tipo senza risultati -->
       <p v-if="showFilteredEmpty" class="filter-empty">
         Nessun risultato per questa categoria. Prova con "Tutti".
@@ -183,7 +189,8 @@ export default {
         </div>
       </section>
 
-    </template>
+      </template><!-- fine v-else (!search.loading) -->
+    </template><!-- fine v-else (hasQuery) -->
   </section>
 </template>
 
