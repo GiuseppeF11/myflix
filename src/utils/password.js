@@ -44,3 +44,11 @@ export function passwordStrength(password) {
 export function evaluateRules(password) {
   return PASSWORD_RULES.map((rule) => ({ ...rule, passed: rule.test(password) }));
 }
+
+/**
+ * Verifica che l'indirizzo email abbia un formato sintatticamente valido.
+ * Non garantisce l'esistenza della casella, ma blocca input palesemente errati.
+ */
+export function isEmailValid(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test((email || '').trim());
+}

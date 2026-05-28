@@ -1,7 +1,7 @@
 <script>
 import { useAuthStore } from '../stores/auth.js';
 import { isSupabaseConfigured } from '../services/supabase.js';
-import { isPasswordValid } from '../utils/password.js';
+import { isPasswordValid, isEmailValid } from '../utils/password.js';
 import PasswordInput from './PasswordInput.vue';
 import PasswordStrength from './PasswordStrength.vue';
 
@@ -42,6 +42,9 @@ export default {
     passwordOk() {
       return this.isSignup ? isPasswordValid(this.password) : true;
     },
+    emailOk() {
+      return isEmailValid(this.email);
+    },
   },
   methods: {
     switchMode(mode) {
@@ -60,7 +63,11 @@ export default {
       this.error = '';
       this.info  = '';
 
-      // Validazione pre-invio per signup
+      // ── Validazioni client-side ───────────────────────────────────────────
+      if (!this.emailOk) {
+        this.error = 'Inserisci un indirizzo email valido.';
+        return;
+      }
       if (this.isSignup && !this.passwordOk) {
         this.error = 'La password non soddisfa tutti i requisiti richiesti.';
         return;
@@ -88,7 +95,13 @@ export default {
           }
         }
       } catch (err) {
-        this.error = err?.message || 'Si è verificato un errore.';
+        // DUPLICATE_EMAIL: l'errore è intenzionalmente generico per non rivelare
+        // se quella email è già registrata nel sistema (sicurezza anti-enumeration).
+        if (err?.code === 'DUPLICATE_EMAIL') {
+          this.error = 'Registrazione non riuscita. Verifica i dati inseriti e riprova.';
+        } else {
+          this.error = err?.message || 'Si è verificato un errore. Riprova più tardi.';
+        }
       } finally {
         this.loading = false;
       }

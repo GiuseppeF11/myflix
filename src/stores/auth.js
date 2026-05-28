@@ -74,7 +74,40 @@ export const useAuthStore = defineStore('auth', {
       if (lastName)  meta.last_name  = lastName;
       const opts = Object.keys(meta).length ? { data: meta } : {};
       const { data, error } = await supabase.auth.signUp({ email, password, options: opts });
-      if (error) throw error;
+
+      // Supabase può segnalare email duplicata in due modi diversi a seconda della
+      // configurazione (email confirmation ON/OFF) e dell'ambiente (locale vs hosted):
+      //
+      // A) Email confirmation OFF (tipico in locale): lancia un AuthApiError
+      //    con status 422 e messaggio "User already registered".
+      // B) Email confirmation ON (hosted default): non lancia errore ma restituisce
+      //    un utente con identities vuote.
+      //
+      // In entrambi i casi convertiamo in un errore generico con code DUPLICATE_EMAIL
+      // per non rivelare l'esistenza dell'email nel sistema.
+
+      if (error) {
+        const isDuplicate =
+          error.status === 422 ||
+          /already registered|already in use|email.*exists/i.test(error.message ?? '');
+        if (isDuplicate) {
+          const e = new Error('Registrazione non riuscita. Verifica i dati inseriti e riprova.');
+          e.code  = 'DUPLICATE_EMAIL';
+          throw e;
+        }
+        throw error;
+      }
+
+      // Caso B: nessun errore Supabase ma identities vuote (o null/assenti).
+      // Supabase invia comunque una email di notifica all'utente esistente (by design),
+      // ma non crea un nuovo account. Noi mostriamo un errore generico in UI.
+      const identities = data.user?.identities;
+      if (!data.session && (!identities || identities.length === 0)) {
+        const e = new Error('Registrazione non riuscita. Verifica i dati inseriti e riprova.');
+        e.code  = 'DUPLICATE_EMAIL';
+        throw e;
+      }
+
       return data;
     },
 
