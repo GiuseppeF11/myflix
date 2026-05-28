@@ -4,7 +4,7 @@ import { useAuthStore }         from '../stores/auth.js';
 import { useAlbumsStore }       from '../stores/albums.js';
 import { useSearchStore }       from '../stores/search.js';
 import { isSupabaseConfigured } from '../services/supabase.js';
-import { getWatchProviders }    from '../services/tmdb.js';
+import { getWatchProviders, getGenres, getItemGenreIds } from '../services/tmdb.js';
 
 import MovieCard        from './MovieCard.vue';
 import AlbumCard        from './AlbumCard.vue';
@@ -39,6 +39,12 @@ export default {
 
       // Filtri
       typeFilter:        'all',
+      sortBy:            'default',
+      sortOrder:         'desc',
+      selectedGenres:    [],
+      genresList:        [],
+      genreCache:        {},          // { 'tmdb_id:media_type': [genre_id, …] }
+      loadingGenres:     false,
       providerFilter:    [],
       providerCache:     {},          // { 'tmdb_id:media_type': [provider_id, …] }
       loadingProviders:  false,
@@ -60,20 +66,19 @@ export default {
 
   computed: {
     requiresLogin() { return this.supabaseEnabled && !this.auth.isLoggedIn; },
-    movieCount()    { return this.favorites.items.filter((i) => i.media_type === 'movie').length; },
-    tvCount()       { return this.favorites.items.filter((i) => i.media_type === 'tv').length; },
-    filterChips() {
-      return [
-        { value: 'all',   label: 'Tutti',    count: this.favorites.items.length },
-        { value: 'movie', label: 'Film',     count: this.movieCount },
-        { value: 'tv',    label: 'Serie TV', count: this.tvCount },
-      ];
-    },
     showAlbums() { return true; }, // visibili per tutti i filtri
-    filteredItems() {
+
+    // Applica generi + provider ma NON typeFilter.
+    // Serve per calcolare i contatori dei chip indipendentemente dal tipo selezionato.
+    filteredItemsBase() {
       let items = this.favorites.items;
-      if (this.typeFilter !== 'all') {
-        items = items.filter((i) => i.media_type === this.typeFilter);
+      if (this.selectedGenres.length > 0) {
+        items = items.filter((item) => {
+          const key = `${item.tmdb_id}:${item.media_type}`;
+          const ids = this.genreCache[key];
+          if (!ids) return false;
+          return this.selectedGenres.some((gid) => ids.includes(gid));
+        });
       }
       if (this.providerFilter.length > 0) {
         items = items.filter((item) => {
@@ -85,14 +90,47 @@ export default {
       }
       return items;
     },
+
+    filterChips() {
+      const base = this.filteredItemsBase;
+      return [
+        { value: 'all',   label: 'Tutti',    count: base.length },
+        { value: 'movie', label: 'Film',     count: base.filter((i) => i.media_type === 'movie').length },
+        { value: 'tv',    label: 'Serie TV', count: base.filter((i) => i.media_type === 'tv').length },
+      ];
+    },
+
+    filteredItems() {
+      let items = this.filteredItemsBase;
+      if (this.typeFilter !== 'all') {
+        items = items.filter((i) => i.media_type === this.typeFilter);
+      }
+      // Ordinamento client-side
+      if (this.sortBy === 'title') {
+        items = [...items].sort((a, b) => {
+          const cmp = (a.title || '').localeCompare(b.title || '', 'it', { sensitivity: 'base' });
+          return this.sortOrder === 'asc' ? cmp : -cmp;
+        });
+      } else if (this.sortBy === 'default' && this.sortOrder === 'asc') {
+        items = [...items].reverse();
+      }
+      return items;
+    },
     providersListForMyList() {
       return this.searchStore.providersList.filter((p) => p.provider_id !== 'cinema');
+    },
+    sortOptionsForMyList() {
+      return [
+        { value: 'default', label: 'Aggiunti di recente' },
+        { value: 'title',   label: 'Titolo'              },
+      ];
     },
   },
 
   mounted() {
     this.albums.load();
     this.searchStore.fetchProviders();
+    this.loadGenreList();
     document.addEventListener('click', this.onOutsideClick);
 
     // Stato non-reattivo per touch drag + long press
@@ -120,6 +158,41 @@ export default {
         this.selectMode = false; this.selectedItems = []; this.showMoveDropdown = false;
       }
     },
+    async loadGenreList() {
+      try {
+        const [movieGenres, tvGenres] = await Promise.all([getGenres('movie'), getGenres('tv')]);
+        const seen = new Set();
+        this.genresList = [...movieGenres, ...tvGenres]
+          .filter((g) => { if (seen.has(g.id)) return false; seen.add(g.id); return true; })
+          .sort((a, b) => a.name.localeCompare(b.name, 'it'));
+      } catch {}
+    },
+    async onGenresChange(val) {
+      this.selectedGenres = val;
+      if (!val.length) return;
+      const toFetch = this.favorites.items.filter((item) => {
+        const key = `${item.tmdb_id}:${item.media_type}`;
+        return !(key in this.genreCache);
+      });
+      if (!toFetch.length) return;
+      this.loadingGenres = true;
+      try {
+        for (let i = 0; i < toFetch.length; i += 5) {
+          await Promise.all(
+            toFetch.slice(i, i + 5).map(async (item) => {
+              const key = `${item.tmdb_id}:${item.media_type}`;
+              try {
+                this.genreCache[key] = await getItemGenreIds(item.tmdb_id, item.media_type);
+              } catch { this.genreCache[key] = []; }
+            })
+          );
+        }
+      } finally { this.loadingGenres = false; }
+    },
+
+    onSortByChange(val)    { this.sortBy = val; },
+    onSortOrderChange(val) { this.sortOrder = val; },
+
     async onProvidersChange(val) {
       this.providerFilter = val;
       if (!val.length) return;
@@ -350,7 +423,7 @@ export default {
   <section v-else class="container-list">
 
     <!-- Loader per caricamenti di pagina (album, preferiti, provider) -->
-    <PageLoader :visible="albums.loading || favorites.loading || loadingProviders" />
+    <PageLoader :visible="albums.loading || favorites.loading || loadingProviders || loadingGenres" />
 
     <div class="page-header">
       <h2>Preferiti</h2>
@@ -414,14 +487,18 @@ export default {
 
       <div class="controls-right">
         <SearchFilters
-          :genres-list="[]"
-          :genres="[]"
-          :sort-by="'popularity'"
-          :sort-order="'desc'"
+          :genres-list="genresList"
+          :genres="selectedGenres"
+          :sort-by="sortBy"
+          :sort-order="sortOrder"
+          :custom-sort-options="sortOptionsForMyList"
           :providers-list="providersListForMyList"
           :providers="providerFilter"
-          :show-genres="false"
-          :show-sort="false"
+          :show-genres="true"
+          :show-sort="true"
+          @update:genres="onGenresChange"
+          @update:sort-by="onSortByChange"
+          @update:sort-order="onSortOrderChange"
           @update:providers="onProvidersChange"
         />
         <button

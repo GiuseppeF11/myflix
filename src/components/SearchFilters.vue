@@ -10,10 +10,11 @@ export default {
     genres:        { type: Array, default: () => [] },
     sortBy:        { type: String, default: 'popularity' },
     sortOrder:     { type: String, default: 'desc' },
-    providersList: { type: Array, default: () => [] },  // [{ provider_id, provider_name, logo_path }]
-    providers:     { type: Array, default: () => [] },  // ID selezionati (può includere 'cinema')
-    showGenres:    { type: Boolean, default: true },
-    showSort:      { type: Boolean, default: true },
+    providersList:     { type: Array,   default: () => [] },  // [{ provider_id, provider_name, logo_path }]
+    providers:         { type: Array,   default: () => [] },  // ID selezionati (può includere 'cinema')
+    showGenres:        { type: Boolean, default: true },
+    showSort:          { type: Boolean, default: true },
+    customSortOptions: { type: Array,   default: null  },     // override delle voci di ordinamento
   },
   emits: ['update:genres', 'update:sortBy', 'update:sortOrder', 'update:providers'],
   data() {
@@ -73,6 +74,7 @@ export default {
       return opt ? opt.label : 'Ordina';
     },
     sortOptions() {
+      if (this.customSortOptions?.length) return this.customSortOptions;
       return [
         { value: 'popularity',   label: 'Popolarità'  },
         { value: 'release_date', label: 'Data uscita' },

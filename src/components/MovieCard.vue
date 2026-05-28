@@ -220,7 +220,7 @@ export default {
 }
 
 .overlay-title {
-  font-size: 0.72rem;
+  font-size: 0.90rem;
   font-weight: 600;
   margin: 0;
   color: $color-text;
@@ -242,7 +242,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.65rem;
+  font-size: 0.80rem;
   font-weight: 700;
   color: #f5c518;
 
@@ -250,7 +250,7 @@ export default {
 }
 
 .meta-year {
-  font-size: 0.65rem;
+  font-size: 0.80rem;
   color: rgba(255, 255, 255, 0.55);
 }
 

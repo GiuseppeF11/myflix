@@ -45,7 +45,9 @@ export async function getDiscoverByGenre(genreId, page = 1) {
 }
 
 export async function getDetails(id, mediaType = 'movie') {
-  const { data } = await tmdb.get(`/${mediaType}/${id}`);
+  const { data } = await tmdb.get(`/${mediaType}/${id}`, {
+    params: { append_to_response: 'credits' },
+  });
   return data;
 }
 
@@ -72,6 +74,12 @@ export async function getWatchProviders(id, mediaType = 'movie') {
 export async function getGenres(mediaType = 'movie') {
   const { data } = await tmdb.get(`/genre/${mediaType}/list`);
   return data.genres || [];
+}
+
+/** Restituisce solo gli ID dei generi di un singolo titolo (chiamata leggera). */
+export async function getItemGenreIds(id, mediaType = 'movie') {
+  const { data } = await tmdb.get(`/${mediaType}/${id}`);
+  return (data.genres || []).map((g) => g.id);
 }
 
 /** Discover film con filtri avanzati (genere, ordinamento, ecc.). */

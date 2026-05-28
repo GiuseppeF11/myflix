@@ -76,6 +76,9 @@ export default {
     backdrop() {
       return getBackdropUrl(this.details?.backdrop_path || this.details?.poster_path);
     },
+    cast() {
+      return (this.details?.credits?.cast || []).slice(0, 6);
+    },
   },
 };
 </script>
@@ -148,6 +151,25 @@ export default {
             </div>
 
             <p class="detail-overview">{{ details.overview || 'Descrizione non disponibile.' }}</p>
+
+            <!-- Cast -->
+            <div v-if="cast.length" class="detail-cast">
+              <span class="cast-label">Cast</span>
+              <div class="cast-list">
+                <div v-for="actor in cast" :key="actor.id" class="cast-item">
+                  <img
+                    v-if="actor.profile_path"
+                    :src="`https://image.tmdb.org/t/p/w185${actor.profile_path}`"
+                    :alt="actor.name"
+                    class="cast-avatar"
+                  />
+                  <div v-else class="cast-avatar cast-avatar--placeholder">
+                    <i class="fa-solid fa-user"></i>
+                  </div>
+                  <span class="cast-name">{{ actor.name }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </template>
       </div>
@@ -352,7 +374,7 @@ export default {
 
 .detail-actions {
   display: flex;
-  gap: $space-md;
+  gap: $space-sm;
   flex-wrap: wrap;
   margin-bottom: $space-md;
 }
@@ -365,13 +387,14 @@ export default {
 .btn-hero {
   display: inline-flex;
   align-items: center;
-  gap: $space-sm;
+  gap: 6px;
   border: none;
   border-radius: $radius-sm;
-  padding: 10px 24px;
-  font-size: 1rem;
+  padding: 8px 16px;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
+  white-space: nowrap;
   transition: opacity 0.15s ease, background-color 0.15s ease;
 
   &.btn-play {
@@ -385,5 +408,69 @@ export default {
     color: $color-text;
     &:hover { background-color: rgba(109, 109, 110, 0.5); }
   }
+}
+
+// ── Cast ──────────────────────────────────────────────────────────────────────
+.detail-cast {
+  margin-top: $space-md;
+}
+
+.cast-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $color-text-dim;
+  margin-bottom: $space-sm;
+}
+
+.cast-list {
+  display: flex;
+  gap: $space-sm;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.cast-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  width: 68px;
+}
+
+.cast-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  display: block;
+
+  &--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.06);
+    color: $color-text-dim;
+    font-size: 1.1rem;
+  }
+}
+
+.cast-name {
+  font-size: 0.68rem;
+  color: $color-text-muted;
+  text-align: center;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
 }
 </style>
