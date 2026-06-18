@@ -80,6 +80,12 @@ export default {
       return (this.details?.credits?.cast || []).slice(0, 6);
     },
   },
+  methods: {
+    goToPerson(personId) {
+      this.$emit('close');
+      this.$router.push({ name: 'PersonDetail', params: { id: personId } });
+    },
+  },
 };
 </script>
 
@@ -156,7 +162,14 @@ export default {
             <div v-if="cast.length" class="detail-cast">
               <span class="cast-label">Cast</span>
               <div class="cast-list">
-                <div v-for="actor in cast" :key="actor.id" class="cast-item">
+                <button
+                  v-for="actor in cast"
+                  :key="actor.id"
+                  type="button"
+                  class="cast-item"
+                  :aria-label="'Vedi i titoli di ' + actor.name"
+                  @click="goToPerson(actor.id)"
+                >
                   <img
                     v-if="actor.profile_path"
                     :src="`https://image.tmdb.org/t/p/w185${actor.profile_path}`"
@@ -167,7 +180,8 @@ export default {
                     <i class="fa-solid fa-user"></i>
                   </div>
                   <span class="cast-name">{{ actor.name }}</span>
-                </div>
+                  <span v-if="actor.character" class="cast-character">{{ actor.character }}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -179,6 +193,7 @@ export default {
 
 <style lang="scss" scoped>
 @use '../assets/scss/partials/variables' as *;
+@use '../assets/scss/partials/mixins' as *;
 
 .detail-overlay {
   position: fixed;
@@ -385,29 +400,7 @@ export default {
 }
 
 .btn-hero {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: none;
-  border-radius: $radius-sm;
-  padding: 8px 16px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
-
-  &.btn-play {
-    background-color: $color-text;
-    color: #000;
-    &:hover { opacity: 0.85; }
-  }
-
-  &.btn-secondary {
-    background-color: rgba(109, 109, 110, 0.7);
-    color: $color-text;
-    &:hover { background-color: rgba(109, 109, 110, 0.5); }
-  }
+  @include hero-buttons(8px 16px, 0.88rem, 6px);
 }
 
 // ── Cast ──────────────────────────────────────────────────────────────────────
@@ -429,7 +422,7 @@ export default {
   display: flex;
   gap: $space-sm;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 4px;
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
 }
@@ -441,6 +434,16 @@ export default {
   gap: 6px;
   flex-shrink: 0;
   width: 68px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  &:hover .cast-avatar {
+    border-color: $color-accent;
+    transform: scale(1.06);
+  }
+  &:hover .cast-name { color: $color-text; }
 }
 
 .cast-avatar {
@@ -451,6 +454,7 @@ export default {
   object-position: top;
   border: 1.5px solid rgba(255, 255, 255, 0.12);
   display: block;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 
   &--placeholder {
     display: flex;
@@ -469,6 +473,19 @@ export default {
   line-height: 1.2;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.cast-character {
+  font-size: 0.62rem;
+  color: $color-text-dim;
+  text-align: center;
+  line-height: 1.2;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;

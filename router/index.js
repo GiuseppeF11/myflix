@@ -4,6 +4,7 @@ import SearchPage         from '../src/components/SearchPage.vue';
 import MyList             from '../src/components/MyList.vue';
 import Series             from '../src/components/Series.vue';
 import Film               from '../src/components/Film.vue';
+import PersonDetail       from '../src/components/PersonDetail.vue';
 import ResetPasswordPage  from '../src/components/ResetPasswordPage.vue';
 import AccountPage        from '../src/components/AccountPage.vue';
 
@@ -33,6 +34,11 @@ const routes = [
         path: '/film',
         name: 'Film',
         component: Film,
+    },
+    {
+        path: '/person/:id',
+        name: 'PersonDetail',
+        component: PersonDetail,
     },
     {
         path: '/account',

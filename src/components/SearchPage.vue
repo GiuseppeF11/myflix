@@ -1,27 +1,36 @@
 <script>
 import { nextTick, watch } from 'vue';
 import { useSearchStore } from '../stores/search.js';
+import { debounce } from '../utils/debounce.js';
 import MovieCard from './MovieCard.vue';
 import SearchFilters from './SearchFilters.vue';
 import LoadingSkeleton from './LoadingSkeleton.vue';
+import SearchModeToggle from './SearchModeToggle.vue';
 
 export default {
   name: 'SearchPage',
-  components: { MovieCard, SearchFilters, LoadingSkeleton },
+  components: { MovieCard, SearchFilters, LoadingSkeleton, SearchModeToggle },
   setup() {
     const search = useSearchStore();
     search.fetchGenres();
     search.fetchProviders();
 
-    watch(
-      () => search.text,
-      () => { search.run(); }
-    );
+    // Debounce: non parte una ricerca ad ogni carattere digitato
+    const debouncedRun = debounce(() => search.run(), 300);
+    watch(() => search.text, debouncedRun);
 
     return { search };
   },
+  mounted() {
+    document.addEventListener('click', this.onOutside);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.onOutside);
+  },
   computed: {
     hasQuery() {
+      // In modalità cast non c'è una griglia risultati: il dropdown gestisce tutto
+      if (this.search.isCastMode) return false;
       return this.search.text.trim().length > 0 || this.search.genres.length > 0 || this.search.providers.length > 0;
     },
     filterChips() {
@@ -52,7 +61,17 @@ export default {
   methods: {
     clearSearch() {
       this.search.text = '';
+      this.search.clearSuggestions();
       this.$router.push('/');
+    },
+    goToPerson(id) {
+      this.search.clearSuggestions();
+      this.$router.push(`/person/${id}`);
+    },
+    onOutside(e) {
+      if (!this.$refs.mobileSearchWrapper?.contains(e.target)) {
+        this.search.clearSuggestions();
+      }
     },
   },
 };
@@ -62,14 +81,14 @@ export default {
   <section class="search-page">
 
     <!-- ── Input mobile (nascosto su desktop) ── -->
-    <div class="mobile-search-wrapper">
+    <div class="mobile-search-wrapper" ref="mobileSearchWrapper">
       <form class="mobile-search-form" @submit.prevent>
         <i class="fa-solid fa-magnifying-glass msf-icon"></i>
         <input
           ref="mobileInput"
           type="search"
           class="msf-input"
-          placeholder="Cerca film o serie…"
+          :placeholder="search.searchMode === 'cast' ? 'Cerca un attore…' : 'Cerca film o serie…'"
           v-model="search.text"
           aria-label="Cerca"
         />
@@ -83,13 +102,42 @@ export default {
           <i class="fa-solid fa-xmark"></i>
         </button>
       </form>
+      <div class="mobile-mode-row">
+        <span class="mobile-mode-label">Cerca per</span>
+        <SearchModeToggle />
+      </div>
+      <div
+        v-if="search.isCastMode && search.personSuggestions.length > 0"
+        class="suggestions-dropdown"
+      >
+        <button
+          v-for="p in search.personSuggestions"
+          :key="p.id"
+          class="suggestion-item"
+          @click="goToPerson(p.id)"
+        >
+          <img
+            :src="`https://image.tmdb.org/t/p/w185${p.profile_path}`"
+            :alt="p.name"
+            class="suggestion-avatar"
+          />
+          <span class="suggestion-name">{{ p.name }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- ── Empty state: ancora nessuna query ── -->
     <div v-if="!hasQuery && !search.loading" class="empty-state">
-      <i class="fa-solid fa-magnifying-glass empty-icon"></i>
-      <p class="empty-title">Cerca su MyFlix</p>
-      <p class="empty-hint">Film, serie TV e molto altro ti aspettano</p>
+      <template v-if="search.isCastMode">
+        <i class="fa-solid fa-user empty-icon"></i>
+        <p class="empty-title">Cerca un attore</p>
+        <p class="empty-hint">Digita il nome e seleziona dal menu a tendina</p>
+      </template>
+      <template v-else>
+        <i class="fa-solid fa-magnifying-glass empty-icon"></i>
+        <p class="empty-title">Cerca su MyFlix</p>
+        <p class="empty-hint">Film, serie TV e molto altro ti aspettano</p>
+      </template>
     </div>
 
     <!-- ── Contenuto ricerca ── -->
@@ -196,6 +244,7 @@ export default {
 
 <style lang="scss" scoped>
 @use '../assets/scss/partials/variables' as *;
+@use '../assets/scss/partials/mixins' as *;
 
 .search-page {
   padding: 12vh 40px 60px;
@@ -206,6 +255,56 @@ export default {
 .mobile-search-wrapper {
   display: none; // nascosto su desktop
   margin-bottom: $space-lg;
+  position: relative;
+}
+
+// ── Dropdown suggerimenti attori (Cast, mobile) ───────────────────────────────
+.suggestions-dropdown {
+  margin-top: 8px;
+  background: $color-surface;
+  border-radius: 12px;
+  // box-shadow invece di border: nessun lato rettilineo allineato alla search form
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.10), 0 8px 24px rgba(0, 0, 0, 0.5);
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: $color-text;
+  transition: background-color 0.15s ease;
+
+  &:hover { background-color: rgba(255, 255, 255, 0.07); }
+  &:not(:last-child) { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+}
+
+.suggestion-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.suggestion-name {
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .mobile-search-form {
@@ -325,62 +424,11 @@ export default {
   strong { color: $color-text; }
 }
 
-// ── Chips filtro ──────────────────────────────────────────────────────────────
-.filter-chips {
-  display: flex;
-  gap: $space-sm;
-  flex-wrap: wrap;
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  background: transparent;
-  color: $color-text-muted;
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 5px 14px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
-
-  &:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.55);
-    color: $color-text;
-  }
-
-  &.active {
-    background-color: $color-text;
-    border-color: $color-text;
-    color: #000;
-    font-weight: 700;
-
-    .chip-count { color: rgba(0, 0, 0, 0.5); }
-    &:hover { color: #000; border-color: $color-text; }
-  }
-
-  &:disabled { opacity: 0.35; cursor: not-allowed; }
-}
-
-.chip-count {
-  font-size: 0.75rem;
-  color: $color-text-dim;
-  font-weight: 400;
-}
+// ── Chips filtro (stile condiviso) ─────────────────────────────────────────────
+@include filter-chips;
 
 // ── Griglia card ─────────────────────────────────────────────────────────────
-.card-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(3, 1fr);
-
-  @media (min-width: 480px)  { grid-template-columns: repeat(4, 1fr); }
-  @media (min-width: 768px)  { grid-template-columns: repeat(5, 1fr); }
-  @media (min-width: 992px)  { grid-template-columns: repeat(6, 1fr); }
-  @media (min-width: 1280px) { grid-template-columns: repeat(7, 1fr); }
-}
+.card-grid { @include card-grid; }
 
 // ── Sezioni risultati ─────────────────────────────────────────────────────────
 .result-section {
@@ -420,6 +468,20 @@ export default {
 
 .section-count {
   font-size: 0.85rem;
+  color: $color-text-dim;
+}
+
+// ── Riga toggle "Cerca per" (solo mobile) ──────────────────────────────────────
+.mobile-mode-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-sm;
+  margin-top: $space-sm;
+}
+
+.mobile-mode-label {
+  font-size: 0.8rem;
   color: $color-text-dim;
 }
 

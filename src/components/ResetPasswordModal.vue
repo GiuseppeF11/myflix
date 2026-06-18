@@ -76,7 +76,7 @@ export default {
     <div class="reset-card">
       <!-- Logo -->
       <div class="reset-logo">
-        <img src="/public/img/logo-myflix.png" alt="MyFlix" class="reset-logo-img" />
+        <img src="/img/logo-myflix.png" alt="MyFlix" class="reset-logo-img" />
       </div>
 
       <div class="reset-icon">
@@ -145,6 +145,7 @@ export default {
 
 <style lang="scss" scoped>
 @use '../assets/scss/partials/variables' as *;
+@use '../assets/scss/partials/mixins' as *;
 
 .reset-overlay {
   position: fixed;
@@ -283,17 +284,7 @@ export default {
 
 // Spinner
 .spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: $color-text;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  @include spinner(16px);
 }
 
 // Nota informativa in fondo

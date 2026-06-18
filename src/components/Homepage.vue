@@ -180,6 +180,7 @@ export default {
 
 <style lang="scss" scoped>
 @use '../assets/scss/partials/variables' as *;
+@use '../assets/scss/partials/mixins' as *;
 
 .hero {
   position: relative;
@@ -247,28 +248,7 @@ export default {
 }
 
 .btn-hero {
-  display: inline-flex;
-  align-items: center;
-  gap: $space-sm;
-  border: none;
-  border-radius: $radius-sm;
-  padding: 10px 24px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
-
-  &.btn-play {
-    background-color: $color-text;
-    color: #000;
-    &:hover { opacity: 0.85; }
-  }
-
-  &.btn-secondary {
-    background-color: rgba(109, 109, 110, 0.7);
-    color: $color-text;
-    &:hover { background-color: rgba(109, 109, 110, 0.5); }
-  }
+  @include hero-buttons;
 }
 
 .row-section {

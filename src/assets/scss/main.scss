@@ -3,3 +3,8 @@
 
 // Import all of Bootstrap's CSS
 @import "bootstrap/scss/bootstrap";
+
+// Animazione spinner condivisa (referenziata dal mixin `spinner`).
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

@@ -117,7 +117,7 @@ export default {
 
       <!-- Logo -->
       <div class="auth-logo">
-        <img src="/public/img/logo-myflix.png" alt="MyFlix" class="auth-logo-img" />
+        <img src="/img/logo-myflix.png" alt="MyFlix" class="auth-logo-img" />
       </div>
 
       <h3 class="auth-title">{{ title }}</h3>
@@ -233,6 +233,7 @@ export default {
 
 <style lang="scss" scoped>
 @use '../assets/scss/partials/variables' as *;
+@use '../assets/scss/partials/mixins' as *;
 
 .auth-overlay {
   position: fixed;
@@ -412,17 +413,7 @@ export default {
 }
 
 .spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: $color-text;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  flex-shrink: 0;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  @include spinner(14px);
 }
 
 .auth-footer {

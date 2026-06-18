@@ -19,6 +19,32 @@ export async function searchTv(query, page = 1) {
   return data;
 }
 
+/** Cerca persone (attori, registi…) per nome. */
+export async function searchPerson(query, page = 1) {
+  const { data } = await tmdb.get('/search/person', { params: { query, page } });
+  return data.results || [];
+}
+
+/**
+ * Crediti combinati (film + serie TV) di una persona come membro del cast.
+ * Ogni item include media_type ('movie'|'tv'), genre_ids e popularity.
+ */
+export async function getPersonCredits(personId) {
+  const { data } = await tmdb.get(`/person/${personId}/combined_credits`);
+  return data.cast || [];
+}
+
+/**
+ * Dettagli anagrafici di una persona: name, biography (in italiano), profile_path,
+ * birthday, deathday, place_of_birth, known_for_department.
+ * L'istanza forza language=it-IT, quindi la biografia è in italiano quando TMDB
+ * la fornisce; resta stringa vuota se non è disponibile in italiano.
+ */
+export async function getPersonDetails(personId) {
+  const { data } = await tmdb.get(`/person/${personId}`);
+  return data;
+}
+
 export async function getNowPlaying() {
   const { data } = await tmdb.get('/movie/now_playing');
   return data.results;

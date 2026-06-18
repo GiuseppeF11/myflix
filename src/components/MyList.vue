@@ -602,6 +602,7 @@ export default {
 
 <style lang="scss" scoped>
 @use '../assets/scss/partials/variables' as *;
+@use '../assets/scss/partials/mixins' as *;
 
 .container-list {
   padding: 12vh 40px 100px;
@@ -711,36 +712,7 @@ export default {
   justify-content: space-between;
 }
 
-.filter-chips {
-  display: flex;
-  gap: $space-sm;
-  flex-wrap: wrap;
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  background: transparent;
-  color: $color-text-muted;
-  font-size: 0.85rem;
-  font-weight: 500;
-  padding: 5px 14px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
-
-  &:hover:not(:disabled) { border-color: rgba(255,255,255,0.55); color: $color-text; }
-  &.active {
-    background-color: $color-text; border-color: $color-text; color: #000; font-weight: 700;
-    .chip-count { color: rgba(0,0,0,0.5); }
-    &:hover { color: #000; border-color: $color-text; }
-  }
-  &:disabled { opacity: 0.35; cursor: not-allowed; }
-}
-
-.chip-count { font-size: 0.75rem; color: $color-text-dim; font-weight: 400; }
+@include filter-chips;
 
 .controls-right {
   display: flex;
@@ -771,16 +743,7 @@ export default {
 }
 
 // ── Griglia card ──────────────────────────────────────────────────────────
-.card-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(3, 1fr);
-
-  @media (min-width: 480px)  { grid-template-columns: repeat(4, 1fr); }
-  @media (min-width: 768px)  { grid-template-columns: repeat(5, 1fr); }
-  @media (min-width: 992px)  { grid-template-columns: repeat(6, 1fr); }
-  @media (min-width: 1280px) { grid-template-columns: repeat(7, 1fr); }
-}
+.card-grid { @include card-grid; }
 
 .card-fill { visibility: hidden; pointer-events: none; }
 .filter-empty { text-align: center; font-style: italic; color: $color-text-dim; padding: 40px 0; }

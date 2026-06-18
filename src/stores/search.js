@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import {
   searchMovies, searchTv, discoverMovies, discoverTv,
   getGenres, getWatchProviders, getWatchProvidersList,
+  searchPerson,
 } from '../services/tmdb.js';
 import { hasRequiredData } from '../utils/media.js';
 
@@ -14,6 +15,11 @@ export const useSearchStore = defineStore('search', {
     series: [],
     filter: 'all',   // 'all' | 'movie' | 'tv'
     loading: false,
+
+    // Modalità di ricerca: 'title' (titoli) | 'cast' (attori)
+    searchMode: 'title',
+    // In modalità cast: suggerimenti attori per il dropdown (foto + nome)
+    personSuggestions: [],
 
     // Filtri avanzati
     genres: [],
@@ -33,6 +39,7 @@ export const useSearchStore = defineStore('search', {
     visibleSeries: (state) => state.filter !== 'movie' ? state.series : [],
     totalCount:    (state) => state.movies.length + state.series.length,
     hasResults:    (state) => state.movies.length > 0 || state.series.length > 0,
+    isCastMode:    (state) => state.searchMode === 'cast',
     sortParam:     (state) => `${state.sortBy}.${state.sortOrder}`,
     hasActiveFilters: (state) =>
       state.genres.length > 0 ||
@@ -80,11 +87,17 @@ export const useSearchStore = defineStore('search', {
       }
     },
 
-    setFilter(value)    { this.filter    = value; },
-    setGenres(ids)      { this.genres    = ids;   },
-    setSortBy(value)    { this.sortBy    = value; },
-    setSortOrder(value) { this.sortOrder = value; },
-    setProviders(ids)   { this.providers = ids;   },
+    setFilter(value)     { this.filter     = value; },
+    setGenres(ids)       { this.genres     = ids;   },
+    setSortBy(value)     { this.sortBy      = value; },
+    setSortOrder(value)  { this.sortOrder   = value; },
+    setProviders(ids)    { this.providers   = ids;   },
+    setSearchMode(value) {
+      this.searchMode = value;
+      // Pulisce i dati della modalità precedente
+      if (value === 'cast') { this.movies = []; this.series = []; }
+      else { this.personSuggestions = []; }
+    },
 
     resetFilters() {
       this.genres    = [];
@@ -98,6 +111,15 @@ export const useSearchStore = defineStore('search', {
       const hasGenres    = this.genres.length > 0;
       const hasProviders = this.providers.length > 0;
 
+      // ── Modalità CAST: la barra propone i suggerimenti attori (dropdown) ──
+      if (this.searchMode === 'cast') {
+        this.movies = [];
+        this.series = [];
+        await this.fetchSuggestions();
+        return;
+      }
+
+      // ── Modalità TITOLO ──────────────────────────────────────────────────
       if (!hasText && !hasGenres && !hasProviders) {
         this.movies = [];
         this.series = [];
@@ -108,7 +130,7 @@ export const useSearchStore = defineStore('search', {
       this.loading = true;
       try {
         if (hasText) {
-          // ── Ricerca testuale ──────────────────────────────────────────────
+          // ── Ricerca testuale per titolo ───────────────────────────────────
           const [moviesRes, seriesRes] = await Promise.all([
             searchMovies(this.text),
             searchTv(this.text),
@@ -231,6 +253,37 @@ export const useSearchStore = defineStore('search', {
         batchFilter(series, 'tv'),
       ]);
     },
+
+    /**
+     * Modalità cast: popola personSuggestions con gli attori il cui nome contiene
+     * il testo digitato (con foto, deduplicati, max 8). Usato dal dropdown della barra.
+     */
+    async fetchSuggestions() {
+      const q = this.text.trim();
+      if (this.searchMode !== 'cast' || q.length < 2) {
+        this.personSuggestions = [];
+        return;
+      }
+      try {
+        const persons = await searchPerson(q);
+        const norm = (s) =>
+          (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+        const nq = norm(q);
+        const seen = new Set();
+        this.personSuggestions = persons
+          .filter((p) => {
+            if (!p.profile_path || !norm(p.name).includes(nq)) return false;
+            if (seen.has(p.id)) return false;
+            seen.add(p.id);
+            return true;
+          })
+          .slice(0, 8);
+      } catch {
+        this.personSuggestions = [];
+      }
+    },
+
+    clearSuggestions() { this.personSuggestions = []; },
 
     _getSortFn() {
       const order = this.sortOrder === 'asc' ? 1 : -1;

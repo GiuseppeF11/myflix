@@ -1,9 +1,10 @@
 <script>
 import { useSearchStore } from '../stores/search.js';
 import ProfileMenu from './ProfileMenu.vue';
+import SearchModeToggle from './SearchModeToggle.vue';
 
 export default {
-    components: { ProfileMenu },
+    components: { ProfileMenu, SearchModeToggle },
     setup() {
         const search = useSearchStore();
         return { search };
@@ -15,9 +16,11 @@ export default {
     },
     mounted() {
         window.addEventListener('scroll', this.handleScroll);
+        document.addEventListener('click', this.onOutside);
     },
     beforeUnmount() {
         window.removeEventListener('scroll', this.handleScroll);
+        document.removeEventListener('click', this.onOutside);
     },
     methods: {
         handleScroll() {
@@ -25,6 +28,21 @@ export default {
         },
         clearSearch() {
             this.search.text = '';
+            this.search.clearSuggestions();
+        },
+        goToPerson(id) {
+            this.search.clearSuggestions();
+            this.$router.push(`/person/${id}`);
+        },
+        onOutside(e) {
+            const wrapper = this.$refs.searchWrapper;
+            if (!wrapper) return;
+            // Su mobile il form desktop è nascosto: non interferire col dropdown mobile
+            const form = wrapper.querySelector('.desktop-search');
+            if (form && getComputedStyle(form).display === 'none') return;
+            if (!wrapper.contains(e.target)) {
+                this.search.clearSuggestions();
+            }
         },
     },
 };
@@ -34,7 +52,7 @@ export default {
     <div class="top-bar" :class="{ scrolled: isScrolled }">
         <div class="left">
             <router-link to="/" class="logo-link">
-                <img class="logo-netflix" src="/public/img/logo-myflix.png" alt="MyFlix">
+                <img class="logo-netflix" src="/img/logo-myflix.png" alt="MyFlix">
             </router-link>
             <nav class="desktop-nav" aria-label="Navigazione">
                 <router-link to="/" :class="{ active: $route.path === '/' }">Home</router-link>
@@ -46,13 +64,39 @@ export default {
 
         <div class="right">
             <!-- Barra di ricerca: visibile su desktop in tutte le sezioni -->
-            <form class="search desktop-search" @submit.prevent>
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="search" placeholder="Cerca film o serie…" aria-label="Cerca" v-model="search.text">
-                <button v-if="search.text" class="search-clear-btn" type="button" @click="clearSearch" aria-label="Cancella ricerca">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </form>
+            <div class="search-wrapper" ref="searchWrapper">
+                <form class="search desktop-search" @submit.prevent>
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input
+                        type="search"
+                        :placeholder="search.searchMode === 'cast' ? 'Cerca un attore…' : 'Cerca film o serie…'"
+                        aria-label="Cerca"
+                        v-model="search.text"
+                    >
+                    <button v-if="search.text" class="search-clear-btn" type="button" @click="clearSearch" aria-label="Cancella ricerca">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                    <SearchModeToggle class="search-mode" />
+                </form>
+                <div
+                    v-if="search.isCastMode && search.personSuggestions.length > 0"
+                    class="suggestions-dropdown"
+                >
+                    <button
+                        v-for="p in search.personSuggestions"
+                        :key="p.id"
+                        class="suggestion-item"
+                        @click="goToPerson(p.id)"
+                    >
+                        <img
+                            :src="`https://image.tmdb.org/t/p/w185${p.profile_path}`"
+                            :alt="p.name"
+                            class="suggestion-avatar"
+                        />
+                        <span class="suggestion-name">{{ p.name }}</span>
+                    </button>
+                </div>
+            </div>
             <ProfileMenu />
         </div>
     </div>
@@ -128,7 +172,9 @@ export default {
     background-color: rgba(255, 255, 255, 0.07);
     border: 1.5px solid rgba(255, 255, 255, 0.14);
     border-radius: 24px;
-    padding: 7px 16px;
+    padding: 6px 6px 6px 16px;
+
+    .search-mode { margin-left: 4px; }
     backdrop-filter: blur(10px);
     transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -191,6 +237,57 @@ export default {
     }
 }
 
+.search-wrapper {
+    position: relative;
+}
+
+// ── Dropdown suggerimenti attori (modalità Cast) ─────────────────────────────
+.suggestions-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    background: $color-surface;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+    z-index: 200;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: $color-text;
+    transition: background-color 0.15s ease;
+
+    &:hover { background-color: rgba(255, 255, 255, 0.07); }
+    &:not(:last-child) { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+}
+
+.suggestion-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.suggestion-name {
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 // Mobile: niente nav inline (c'è la bottom-nav); la ricerca è nella bottom-nav.
 @media (max-width: $bp-lg) {
     .top-bar {
@@ -203,6 +300,11 @@ export default {
 
     // La ricerca su mobile è nella bottom-nav, non nell'header
     .desktop-search {
+        display: none;
+    }
+
+    // Il dropdown cast su mobile è gestito da SearchPage, non dall'header
+    .suggestions-dropdown {
         display: none;
     }
 }
