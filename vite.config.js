@@ -9,16 +9,17 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         // In dev il proxy Vite aggiunge la api_key lato server, mai nel bundle.
-        '/api/tmdb': {
+        '/api/proxy': {
           target: 'https://api.themoviedb.org/3',
           changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/tmdb/, '') || '/',
-          configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
-              const url = new URL('http://x' + proxyReq.path)
-              url.searchParams.set('api_key', env.TMDB_API_KEY)
-              proxyReq.path = url.pathname + url.search
-            })
+          rewrite: (path) => {
+            // path include la querystring: "/api/proxy?path=movie/popular&language=it-IT"
+            const [, search] = path.split('?')
+            const params = new URLSearchParams(search || '')
+            const tmdbPath = params.get('path') || ''
+            params.delete('path')
+            params.set('api_key', env.TMDB_API_KEY)
+            return '/' + tmdbPath + '?' + params.toString()
           },
         },
       },

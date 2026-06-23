@@ -1,11 +1,23 @@
 import axios from 'axios';
 
 const tmdb = axios.create({
-  baseURL: '/api/tmdb',
+  baseURL: '/api/proxy',
   params: {
     language: 'it-IT',
     region: 'IT',
   },
+});
+
+// Riscrive ogni chiamata come GET /api/proxy?path=movie/now_playing&...
+// Il path viene messo LETTERALMENTE nella query string (niente %2F) per evitare
+// problemi di matching nel proxy Vite e nelle serverless Vercel.
+tmdb.interceptors.request.use((config) => {
+  const tmdbPath = (config.url || '').replace(/^\//, '');
+  const entries = Object.entries(config.params || {}).filter(([, v]) => v != null);
+  const qs = entries.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+  config.url = '?' + (qs ? qs + '&' : '') + `path=${tmdbPath}`;
+  config.params = undefined;
+  return config;
 });
 
 export async function searchMovies(query, page = 1) {
