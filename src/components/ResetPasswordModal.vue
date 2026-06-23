@@ -3,10 +3,11 @@ import { useAuthStore } from '../stores/auth.js';
 import { isPasswordValid } from '../utils/password.js';
 import PasswordInput from './PasswordInput.vue';
 import PasswordStrength from './PasswordStrength.vue';
+import AppLogo from './AppLogo.vue';
 
 export default {
   name: 'ResetPasswordModal',
-  components: { PasswordInput, PasswordStrength },
+  components: { PasswordInput, PasswordStrength, AppLogo },
   setup() {
     const auth = useAuthStore();
     return { auth };
@@ -76,7 +77,7 @@ export default {
     <div class="reset-card">
       <!-- Logo -->
       <div class="reset-logo">
-        <img src="/img/logo-myflix.png" alt="MyFlix" class="reset-logo-img" />
+        <AppLogo />
       </div>
 
       <div class="reset-icon">

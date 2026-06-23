@@ -2,9 +2,10 @@
 import { useSearchStore } from '../stores/search.js';
 import ProfileMenu from './ProfileMenu.vue';
 import SearchModeToggle from './SearchModeToggle.vue';
+import AppLogo from './AppLogo.vue';
 
 export default {
-    components: { ProfileMenu, SearchModeToggle },
+    components: { ProfileMenu, SearchModeToggle, AppLogo },
     setup() {
         const search = useSearchStore();
         return { search };
@@ -52,7 +53,7 @@ export default {
     <div class="top-bar" :class="{ scrolled: isScrolled }">
         <div class="left">
             <router-link to="/" class="logo-link">
-                <img class="logo-netflix" src="/img/logo-myflix.png" alt="MyFlix">
+                <AppLogo />
             </router-link>
             <nav class="desktop-nav" aria-label="Navigazione">
                 <router-link to="/" :class="{ active: $route.path === '/' }">Home</router-link>
@@ -132,10 +133,6 @@ export default {
     align-items: center;
 }
 
-.logo-netflix {
-    width: 110px;
-    max-width: 110px;
-}
 
 .desktop-nav {
     display: flex;

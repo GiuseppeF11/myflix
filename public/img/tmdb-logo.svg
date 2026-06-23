@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185 133">
+  <defs>
+    <linearGradient id="tmdb-g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#90CEA1"/>
+      <stop offset="100%" stop-color="#01B4E4"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="185" height="133" rx="8" fill="#081C22"/>
+  <rect x="10" y="78" width="165" height="44" rx="6" fill="url(#tmdb-g)"/>
+  <text x="92" y="112" font-family="Arial Black, Arial, sans-serif" font-size="28" font-weight="900" fill="#081C22" text-anchor="middle" letter-spacing="2">TMDB</text>
+  <text x="92" y="60" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#90CEA1" text-anchor="middle" letter-spacing="1.5">THE MOVIE DATABASE</text>
+</svg>

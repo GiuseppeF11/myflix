@@ -200,7 +200,7 @@ export default {
       object-position: center top;
     }
 
-    // Doppio gradiente Netflix: sfuma in basso e da sinistra.
+    // Doppio gradiente: sfuma in basso e da sinistra.
     &::after {
       content: '';
       position: absolute;

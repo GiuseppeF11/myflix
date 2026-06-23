@@ -4,10 +4,11 @@ import { isSupabaseConfigured } from '../services/supabase.js';
 import { isPasswordValid, isEmailValid } from '../utils/password.js';
 import PasswordInput from './PasswordInput.vue';
 import PasswordStrength from './PasswordStrength.vue';
+import AppLogo from './AppLogo.vue';
 
 export default {
   name: 'AuthModal',
-  components: { PasswordInput, PasswordStrength },
+  components: { PasswordInput, PasswordStrength, AppLogo },
   emits: ['close'],
   props: {
     initialMode: { type: String, default: 'login' }, // 'login' | 'signup' | 'reset'
@@ -117,7 +118,7 @@ export default {
 
       <!-- Logo -->
       <div class="auth-logo">
-        <img src="/img/logo-myflix.png" alt="MyFlix" class="auth-logo-img" />
+        <AppLogo />
       </div>
 
       <h3 class="auth-title">{{ title }}</h3>

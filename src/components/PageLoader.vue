@@ -48,7 +48,7 @@ export default {
 .ring {
   position: absolute;
   border-radius: 50%;
-  border: 2px solid rgba(219, 25, 39, 0.75);
+  border: 2px solid rgba(245, 158, 11, 0.75);
   animation: pulse-ring 2s ease-out infinite;
 }
 
@@ -68,19 +68,19 @@ export default {
   width: 58px;
   height: 58px;
   border-radius: 50%;
-  background: #db1927;
+  background: #f59e0b;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow:
-    0 0 0 0 rgba(219, 25, 39, 0.5),
-    0 4px 24px rgba(219, 25, 39, 0.4);
+    0 0 0 0 rgba(245, 158, 11, 0.5),
+    0 4px 24px rgba(245, 158, 11, 0.4);
   animation: pulse-btn 2s ease-in-out infinite;
 }
 
 @keyframes pulse-btn {
-  0%, 100% { transform: scale(1);    box-shadow: 0 0 0  0px rgba(219, 25, 39, 0.4), 0 4px 24px rgba(219, 25, 39, 0.4); }
-  50%       { transform: scale(0.94); box-shadow: 0 0 0 10px rgba(219, 25, 39, 0),   0 4px 24px rgba(219, 25, 39, 0.2); }
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0  0px rgba(245, 158, 11, 0.4), 0 4px 24px rgba(245, 158, 11, 0.4); }
+  50%       { transform: scale(0.94); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0),   0 4px 24px rgba(245, 158, 11, 0.2); }
 }
 
 /* ---- Triangolo play (CSS puro) ---- */

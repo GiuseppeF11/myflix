@@ -1,5 +1,5 @@
 /**
- * Regole di validazione password per MyFlix.
+ * Regole di validazione password per Cinova.
  * Ogni regola ha: id, label leggibile, funzione test(password) → boolean.
  */
 export const PASSWORD_RULES = [

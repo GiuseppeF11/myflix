@@ -3,7 +3,7 @@ import { supabase, isSupabaseConfigured } from '../services/supabase.js';
 import { useAuthStore }   from './auth.js';
 import { useAlbumsStore } from './albums.js';
 
-const STORAGE_KEY = 'myflix:favorites';
+const STORAGE_KEY = 'cinova:favorites';
 
 // Forma unica e normalizzata di un preferito, indipendente da quale
 // componente lo aggiunge (risolve l'incoerenza dei dati tra le viste).

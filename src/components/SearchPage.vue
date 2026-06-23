@@ -135,7 +135,7 @@ export default {
       </template>
       <template v-else>
         <i class="fa-solid fa-magnifying-glass empty-icon"></i>
-        <p class="empty-title">Cerca su MyFlix</p>
+        <p class="empty-title">Cerca su Cinova</p>
         <p class="empty-hint">Film, serie TV e molto altro ti aspettano</p>
       </template>
     </div>

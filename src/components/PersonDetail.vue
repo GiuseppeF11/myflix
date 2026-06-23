@@ -282,7 +282,7 @@ export default {
   padding: $space-lg;
   border-radius: $radius-md;
   background:
-    radial-gradient(ellipse at top left, rgba(219, 25, 39, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at top left, rgba(245, 158, 11, 0.12) 0%, transparent 60%),
     $color-surface;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -323,8 +323,8 @@ export default {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: $color-accent;
-  background-color: rgba(219, 25, 39, 0.12);
-  border: 1px solid rgba(219, 25, 39, 0.3);
+  background-color: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
   padding: 3px 10px;
   border-radius: 20px;
   margin-bottom: $space-sm;
@@ -418,7 +418,7 @@ export default {
 
   i { font-size: 0.9rem; }
 
-  &.badge-movie { background-color: rgba(219, 25, 39, 0.18); color: #ff6b78; border-left: 3px solid $color-accent; }
+  &.badge-movie { background-color: rgba(245, 158, 11, 0.18); color: #fcd34d; border-left: 3px solid $color-accent; }
   &.badge-tv    { background-color: rgba(100, 149, 237, 0.15); color: #7eb5ff; border-left: 3px solid #6495ed; }
 }
 

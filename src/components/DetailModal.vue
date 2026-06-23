@@ -226,7 +226,7 @@ export default {
   flex: 1;
   min-height: 0; // necessario in flexbox per permettere lo scroll figlio
 
-  // Scrollbar sottile stile Netflix
+  // Scrollbar sottile
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 

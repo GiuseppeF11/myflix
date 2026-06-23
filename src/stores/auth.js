@@ -2,8 +2,8 @@ import { defineStore } from 'pinia';
 import { supabase, isSupabaseConfigured } from '../services/supabase.js';
 import { useFavoritesStore } from './favorites.js';
 
-const AVATAR_PREFIX   = 'myflix:avatar:';
-const RECOVERY_KEY    = 'myflix:recovery'; // sessionStorage flag per il reset forzato
+const AVATAR_PREFIX   = 'cinova:avatar:';
+const RECOVERY_KEY    = 'cinova:recovery'; // sessionStorage flag per il reset forzato
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({

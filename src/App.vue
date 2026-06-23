@@ -6,6 +6,7 @@ import BottomNav from './components/BottomNav.vue';
 import ScrollToTop from './components/ScrollToTop.vue';
 import ResetPasswordModal from './components/ResetPasswordModal.vue';
 import PageLoader from './components/PageLoader.vue';
+import AppFooter from './components/AppFooter.vue';
 import { useSearchStore } from './stores/search.js';
 import { useAuthStore } from './stores/auth.js';
 
@@ -34,6 +35,7 @@ export default {
         ScrollToTop,
         ResetPasswordModal,
         PageLoader,
+        AppFooter,
     },
     watch: {
         'search.text'(val) {
@@ -90,6 +92,8 @@ export default {
           (es. token ricevuto in una tab già aperta), mostra il modale di overlay.
         -->
         <ResetPasswordModal v-if="auth.isRecovering && !$route.meta.bare" />
+
+        <AppFooter />
     </div>
 </template>
 

@@ -4,10 +4,11 @@ import { isPasswordValid } from '../utils/password.js';
 import PasswordInput from './PasswordInput.vue';
 import PasswordStrength from './PasswordStrength.vue';
 import PageLoader from './PageLoader.vue';
+import AppLogo from './AppLogo.vue';
 
 export default {
   name: 'ResetPasswordPage',
-  components: { PasswordInput, PasswordStrength, PageLoader },
+  components: { PasswordInput, PasswordStrength, PageLoader, AppLogo },
   setup() {
     const auth = useAuthStore();
     return { auth };
@@ -68,7 +69,7 @@ export default {
 
       <!-- Logo -->
       <router-link to="/" class="rp-logo-link">
-        <img src="/img/logo-myflix.png" alt="MyFlix" class="rp-logo" />
+        <AppLogo />
       </router-link>
 
       <!-- ── Caricamento in corso ── -->
