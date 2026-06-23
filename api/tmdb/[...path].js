@@ -26,7 +26,6 @@ export default async function handler(req, res) {
   const upstream = await fetch(url.toString());
   const data = await upstream.json();
 
-  // Cache leggera: 5 minuti in CDN, stale-while-revalidate 10 minuti
-  res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+  res.setHeader('Cache-Control', 'no-store');
   res.status(upstream.status).json(data);
 }
