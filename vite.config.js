@@ -6,6 +6,18 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [vue()],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vue-core':  ['vue', 'vue-router', 'pinia'],
+            'supabase':  ['@supabase/supabase-js'],
+            'axios':     ['axios'],
+            'swiper':    ['swiper', 'vue-awesome-swiper'],
+          },
+        },
+      },
+    },
     server: {
       proxy: {
         // In dev il proxy Vite aggiunge la api_key lato server, mai nel bundle.

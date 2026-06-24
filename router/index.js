@@ -1,56 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home               from '../src/components/AppMain.vue';
-import SearchPage         from '../src/components/SearchPage.vue';
-import MyList             from '../src/components/MyList.vue';
-import Series             from '../src/components/Series.vue';
-import Film               from '../src/components/Film.vue';
-import PersonDetail       from '../src/components/PersonDetail.vue';
-import ResetPasswordPage  from '../src/components/ResetPasswordPage.vue';
-import AccountPage        from '../src/components/AccountPage.vue';
 
 const routes = [
     {
         path: '/',
         name: 'Home',
-        component: Home,
+        component: () => import('../src/components/AppMain.vue'),
     },
     {
         path: '/search',
         name: 'Search',
-        component: SearchPage,
+        component: () => import('../src/components/SearchPage.vue'),
     },
     {
         path: '/my-list',
         name: 'MyList',
-        component: MyList,
+        component: () => import('../src/components/MyList.vue'),
         meta: { requiresAuth: true },
     },
     {
         path: '/series',
         name: 'Series',
-        component: Series,
+        component: () => import('../src/components/Series.vue'),
     },
     {
         path: '/film',
         name: 'Film',
-        component: Film,
+        component: () => import('../src/components/Film.vue'),
     },
     {
         path: '/person/:id',
         name: 'PersonDetail',
-        component: PersonDetail,
+        component: () => import('../src/components/PersonDetail.vue'),
     },
     {
         path: '/account',
         name: 'Account',
-        component: AccountPage,
+        component: () => import('../src/components/AccountPage.vue'),
     },
     {
-        // Destinazione del link "Recupera password" inviato via email da Supabase.
-        // meta.bare = true → App.vue nasconde header, bottom-nav e ScrollToTop.
         path: '/reset-password',
         name: 'ResetPassword',
-        component: ResetPasswordPage,
+        component: () => import('../src/components/ResetPasswordPage.vue'),
         meta: { bare: true },
     },
 ];
